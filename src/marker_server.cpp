@@ -1,9 +1,10 @@
 #include <ros/ros.h>
-#include <assignment2/RoomConnection.h>
-#include <assignment2/RoomInformation.h>
+#include <ExpRoLab_Assignment2/RoomConnection.h>
+#include <ExpRoLab_Assignment2/RoomInformation.h>
 
-bool markerCallback(assignment2::RoomInformation::Request &req, assignment2::RoomInformation::Response &res){
-	assignment2::RoomConnection conn;
+bool markerCallback(ExpRoLab_Assignment2::RoomInformation::Request &req, ExpRoLab_Assignment2::RoomInformation::Response &res)
+{
+	ExpRoLab_Assignment2::RoomConnection conn;
 	switch (req.id){
 	case 11:
 		res.room = "E";
@@ -83,7 +84,7 @@ bool markerCallback(assignment2::RoomInformation::Request &req, assignment2::Roo
 		res.connections.push_back(conn);
 		break;
 	default:
-		res.room = "no room associated with this marker id";
+		res.room = "No room associated with this marker ID.";
 	}
 	return true;
 }	
@@ -94,7 +95,7 @@ bool markerCallback(assignment2::RoomInformation::Request &req, assignment2::Roo
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "assignment2");
+	ros::init(argc, argv, "ExpRoLab_Assignment2");
 	ros::NodeHandle nh;
 	ros::ServiceServer oracle = nh.advertiseService( "/room_info",markerCallback);
 	ros::spin();
