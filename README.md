@@ -11,7 +11,7 @@ We were provided with [this package](https://github.com/CarmineD8/assignment2) a
 - to perform a complete scan of the room (by rotating the base or the camera) when a room was reached.
 
 ## Software architecture
-The user can find a detailed description of the software architecture that was used [here](https://github.com/sarasgambato/ExpRoLab_Assignment1/edit/master/README.md#software-architecture).
+The user can find a detailed description of the software architecture that was used [here](https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#software-architecture).
 
 However, some changes were done.
 
