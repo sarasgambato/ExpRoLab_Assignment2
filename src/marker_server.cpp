@@ -1,7 +1,38 @@
+/**
+* \file marker_server.cpp
+* \brief Server to build the map through the markers
+* \author Sara Sgambato
+* \version 0.1
+* \date 27/01/2023
+*
+* \details
+*
+* Services : <BR>
+* /room_info
+*
+* Description :
+*
+* This node is a server which generates a response based on the request it receives. The request changes based on the ArUco marker
+* that the robot detects, and the response corresponds to a room with all its connections.
+*
+*/
+
 #include <ros/ros.h>
 #include <ExpRoLab_Assignment2/RoomConnection.h>
 #include <ExpRoLab_Assignment2/RoomInformation.h>
 
+/**
+* \brief Callback function.
+*
+* \param req is the request from the client, containing the marker id
+* \param res is the response of the server, which will be information about some room
+
+* \return true
+*
+* This callback function gets the request from the client and checks its id. Each id corresponds to a different marker,
+* which has different information. The response of the server contains the room that has been detected, its position and
+* all the corridors the room is connected to through the doors.
+*/
 bool markerCallback(ExpRoLab_Assignment2::RoomInformation::Request &req, ExpRoLab_Assignment2::RoomInformation::Response &res)
 {
 	ExpRoLab_Assignment2::RoomConnection conn;
@@ -89,10 +120,9 @@ bool markerCallback(ExpRoLab_Assignment2::RoomInformation::Request &req, ExpRoLa
 	return true;
 }	
 
-
-
-
-
+/**
+* \brief Main function.
+*/
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "ExpRoLab_Assignment2");

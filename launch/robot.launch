@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<launch>
+	
+<arg name="model" default="$(find ExpRoLab_Assignment2)/urdf/my_robot.xacro" />
+<!-- Load the URDF into the ROS Parameter Server -->
+<param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+
+<param name="use_gui" value="True"/>
+<node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" />
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+  <remap from="joint_states" to="my_robot/joint_states"/> 
+</node>
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(find urdf_tutorial)/urdf.rviz" />
+
+<include file="$(find gazebo_ros)/launch/empty_world.launch"> 
+  <arg name="paused" value="true"/>
+</include>
+
+<node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+args="-urdf -model robot1 -param robot_description -z 0.05"/> 
+
+  <rosparam file="$(find ExpRoLab_Assignment2)/config/motors_config1.yaml" command="load" ns="/my_robot" />
+
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--namespace=/my_robot
+      joint_state_controller
+      joint1_position_controller
+      --shutdown-timeout 3">
+  </node>
+
+
+</launch>
