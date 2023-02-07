@@ -28,10 +28,12 @@ import time
 from actionlib import SimpleActionClient
 from threading import Lock
 from armor_api.armor_client import ArmorClient
-from Assignment_1 import architecture_name_mapper as anm
-from std_msgs.msg import Bool
-from Assignment_1.msg import PlanAction, ControlAction
-from Assignment_1.srv import SetPose
+from ExpRoLab_Assignment2 import architecture_name_mapper as anm
+from std_msgs.msg import Bool, Int32MultiArray
+from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseActionFeedback
+from actionlib_msgs.msg import GoalStatusArray
+from ExpRoLab_Assignment2.msg import PlanAction, ControlAction
+from ExpRoLab_Assignment2.srv import SetPose
 
 client = ArmorClient("armor_client", "my_ontology")
 
@@ -218,6 +220,8 @@ class InterfaceHelper:
         self.reset_states()
         # Define the callback associated with the battery low ROS subscribers
         rospy.Subscriber(anm.TOPIC_BATTERY_LOW, Bool, self.battery_callback_)
+        # Define the callback associated with the marker ID ROS subscribers
+        rospy.Subscriber(anm.TOPIC_MARKER_LIST, Int32MultiArray, self.list_callback_)
         # Define the clients for the the plan and control action servers
         self.planner_client = ActionClientHelper(anm.ACTION_PLANNER, PlanAction, mutex=self.mutex)
         self.controller_client = ActionClientHelper(anm.ACTION_CONTROLLER, ControlAction, mutex=self.mutex)
@@ -252,6 +256,26 @@ class InterfaceHelper:
         try:
             # Get the battery level and set the relative state variable encoded in this class
             self._battery_low = msg.data
+        finally:
+            # Release the mutex to eventually unblock the other subscribers or action servers that are waiting
+            self.mutex.release()
+
+    def list_callback_(self, msg):
+        """
+        Function for the subscriber to get messages published from the `detect_marker` node into the `/list_topic` topic.
+        
+        Args:
+            msg(List): list of found markers
+            
+        Returns:
+            None
+        """
+
+        # Acquire the mutex to assure the synchronization with the other subscribers and action clients
+        self.mutex.acquire()
+        try:
+            # Get the battery level and set the relative state variable encoded in this class
+            self._marker_list = msg.data
         finally:
             # Release the mutex to eventually unblock the other subscribers or action servers that are waiting
             self.mutex.release()

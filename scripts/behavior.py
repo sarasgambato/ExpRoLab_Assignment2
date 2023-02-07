@@ -57,7 +57,7 @@ class LoadOntology(State):
     def execute(self, userdata):
         """
         Function that is executed when entering the INITIALIZE_MAP state of the fsm. 
-        It loads the topological map and transitions to the state NORMAL.
+        It calls the detecter of the markers and waits for the map to be built, then it transitions to the state NORMAL.
 
         Args: 
             userdata: not used

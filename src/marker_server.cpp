@@ -11,9 +11,8 @@
 * /room_info
 *
 * Description :
-*
-* This node is a server which generates a response based on the request it receives. The request changes based on the ArUco marker
-* that the robot detects, and the response corresponds to a room with all its connections.
+* This node is a server which generates a response based on the request it receives. The request changes based 
+* on the ArUco marker that the robot detects, and the response corresponds to a room with all its connections.
 *
 */
 
@@ -125,9 +124,9 @@ bool markerCallback(ExpRoLab_Assignment2::RoomInformation::Request &req, ExpRoLa
 */
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "ExpRoLab_Assignment2");
+	ros::init(argc, argv, "marker_server");
 	ros::NodeHandle nh;
-	ros::ServiceServer oracle = nh.advertiseService( "/room_info",markerCallback);
+	ros::ServiceServer oracle = nh.advertiseService( "/room_info", markerCallback);
 	ros::spin();
 	ros::shutdown();
 	return 0;

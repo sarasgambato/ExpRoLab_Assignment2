@@ -2,7 +2,7 @@
 
 <robot name="robot_assignment" xmlns:xacro="https://www.ros.org/wiki/xacro" >>
     <!-- Materials -->
-	<gazebo reference="chassis_link">
+	<gazebo reference="link_chassis">
 		<material>Gazebo/Orange</material>
 	</gazebo>
 	<gazebo reference="link_left_wheel">
@@ -38,14 +38,12 @@
         <commandTopic>cmd_vel</commandTopic>
         <odometryTopic>odom</odometryTopic>
         <odometryFrame>odom</odometryFrame>
-        <robotBaseFrame>chassis_link</robotBaseFrame>
+        <robotBaseFrame>link_chassis</robotBaseFrame>
         <rosDebugLevel>na</rosDebugLevel>
         <publishWheelTF>true</publishWheelTF>
         <publishWheelJointState>true</publishWheelJointState>
         <wheelAcceleration>0</wheelAcceleration>
         <wheelTorque>5</wheelTorque>
-        <odometrySource>1</odometrySource>
-        <publishTf>1</publishTf>
         </plugin>
     </gazebo>
 
