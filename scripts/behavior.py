@@ -22,9 +22,9 @@ import random
 import smach_ros
 from smach import StateMachine, State
 from load_ontology import LoadMap
-from Assignment_1 import architecture_name_mapper as anm
+from ExpRoLab_Assignment2 import architecture_name_mapper as anm
 from helper import InterfaceHelper, BehaviorHelper
-from Assignment_1.msg import Point, ControlGoal, PlanGoal
+from ExpRoLab_Assignment2.msg import Point, ControlGoal, PlanGoal
 from os.path import dirname, realpath
 
 # list of states in the machine
@@ -51,8 +51,9 @@ class LoadOntology(State):
     Class related to the state that loads the ontology.
     """
 
-    def __init__(self):
+    def __init__(self, helper):
         State.__init__(self, outcomes=[TRANS_INITIALIZED])
+        self._helper = helper
 
     def execute(self, userdata):
         """
@@ -66,7 +67,10 @@ class LoadOntology(State):
             Str: 'everything_loaded' once the map has been intialized
         """
 
-        LoadMap()
+        while not self._helper._marker_list:
+            pass
+
+        mapClass = LoadMap
         print('The map is loaded')
         return TRANS_INITIALIZED
 
@@ -125,11 +129,6 @@ class DecideTarget(State):
             Str: 'recharging' if the battery is low, 'target_acquired' otherwise
         """
 
-        # plan a random goal with some number of via points to simulate movement
-        goal = PlanGoal()
-        goal.target = Point(x = random.uniform(0, self.environment_size[0]), 
-                            y = random.uniform(0, self.environment_size[1]))
-        self._helper.planner_client.send_goal(goal)
         current_pose, choice = self._sm_helper.decide_location()
 
         while not rospy.is_shutdown():
@@ -214,7 +213,7 @@ def main():
     sm_main = StateMachine([])
     with sm_main:
         # Initialization state
-        StateMachine.add(STATE_INIT, LoadOntology(),
+        StateMachine.add(STATE_INIT, LoadOntology(helper),
                          transitions={TRANS_INITIALIZED: STATE_NORMAL})
         # Inner fsm
         sm_normal = StateMachine(outcomes=[TRANS_BATTERY_LOW])

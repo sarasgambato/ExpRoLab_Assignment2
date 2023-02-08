@@ -28,8 +28,6 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int32MultiArray.h>
 
-static const std::string c_opencvWindow = "Image window";
-
 class DetectAruco
 {
     private:
@@ -57,7 +55,7 @@ class DetectAruco
         joint01_pub = nh.advertise<std_msgs::Float64>("/robot_assignment/joint1_position_controller/command", 1);
         joint02_pub = nh.advertise<std_msgs::Float64>("/robot_assignment/joint2_position_controller/command", 1);
         joint03_pub = nh.advertise<std_msgs::Float64>("/robot_assignment/joint3_position_controller/command", 1);
-        ID_pub = nh.advertise<std_msgs::Int32MultiArray>("/list_topic", 1);
+        ID_pub = nh.advertise<std_msgs::Int32MultiArray>("/id_list", 1);
         // subscribers
         camera_sub = nh.subscribe<sensor_msgs::Image>("/robot_assignment/camera1/image_raw", 1, &DetectAruco::CameraCallback, this);
 

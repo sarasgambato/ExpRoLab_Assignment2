@@ -21,10 +21,10 @@ Servers:
 import threading
 import rospy
 from helper import InterfaceHelper
-from Assignment_1 import architecture_name_mapper as anm
+from ExpRoLab_Assignment2 import architecture_name_mapper as anm
 from std_msgs.msg import Bool
-from Assignment_1.msg import Point
-from Assignment_1.srv import GetPose, GetPoseResponse, SetPose, SetPoseResponse
+from ExpRoLab_Assignment2.msg import Point
+from ExpRoLab_Assignment2.srv import GetPose, GetPoseResponse, SetPose, SetPoseResponse
 
 # A tag for identifying logs producer
 LOG_TAG = anm.NODE_ROBOT_STATE

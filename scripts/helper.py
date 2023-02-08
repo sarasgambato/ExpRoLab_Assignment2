@@ -33,7 +33,7 @@ from std_msgs.msg import Bool, Int32MultiArray
 from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseActionFeedback
 from actionlib_msgs.msg import GoalStatusArray
 from ExpRoLab_Assignment2.msg import PlanAction, ControlAction
-from ExpRoLab_Assignment2.srv import SetPose
+from ExpRoLab_Assignment2.srv import SetPose, RoomInformation
 
 client = ArmorClient("armor_client", "my_ontology")
 
@@ -225,6 +225,8 @@ class InterfaceHelper:
         # Define the clients for the the plan and control action servers
         self.planner_client = ActionClientHelper(anm.ACTION_PLANNER, PlanAction, mutex=self.mutex)
         self.controller_client = ActionClientHelper(anm.ACTION_CONTROLLER, ControlAction, mutex=self.mutex)
+        # Define the client for the marker server
+        self.marker_client = rospy.ServiceProxy('/room_info', RoomInformation)
 
     def reset_states(self):
         """
@@ -276,6 +278,7 @@ class InterfaceHelper:
         try:
             # Get the battery level and set the relative state variable encoded in this class
             self._marker_list = msg.data
+
         finally:
             # Release the mutex to eventually unblock the other subscribers or action servers that are waiting
             self.mutex.release()

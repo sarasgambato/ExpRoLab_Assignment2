@@ -13,96 +13,81 @@ Clients:
     :attr:`armor_client`: client to communicate with the aRMOR server in order to create the ontology.
 """
 
+import rospy
 import time
+from std_msgs import Int32MultiArray
 from armor_api.armor_client import ArmorClient
 from os.path import dirname, realpath
-client = ArmorClient("armor_client", "my_ontology") 
+from helper import InterfaceHelper
+from ExpRoLab_Assignment2.srv import RoomInformation
 
-path = dirname(realpath(__file__))
-# Put the path of the file.owl
-path = path + "/../../topological_map/"
+class LoadMap:
 
-# Initializing with buffered manipulation and reasoning
-client.utils.load_ref_from_file(path + "topological_map.owl", "http://bnc/exp-rob-lab/2022-23", True, "PELLET", False, False)
+    def __init__(self):
+        # Armor stuff
+        self.armor_client = ArmorClient("assignment", "my_ontology")
+        self.path = dirname(realpath(__file__))
+        # Put the path of the file.owl
+        self.path = self.path + "/../../topological_map/"
+        # Initializing with buffered manipulation and reasoning
+        self.armor_client.utils.load_ref_from_file(self.path + "topological_map.owl", "http://bnc/exp-rob-lab/2022-23", True, "PELLET", False, False)
+        self.armor_client.utils.mount_on_ref()
+        self.armor_client.utils.set_log_to_terminal(True)
 
-client.utils.mount_on_ref()
-client.utils.set_log_to_terminal(True)
+        # Define the subscriber to the topic in which the list with the markers' ID is published
+        rospy.Subscriber("/id_list", Int32MultiArray, self.marker_cb)
+        # Connect to marker_server to retrieve info
+        self.get_info = rospy.ServiceProxy("/room_info", RoomInformation)
 
-def LoadMap():
-    """
-    Function used to load all the individuals with their properties in the topological map.
-    
-    Args:
-        None
-        
-    Returns:
-        None
-    """
-    
-    rooms = []
-    doors = []
-    corridors = []
+        # Variables
+        self.locations = []
+        self.rooms_coordinates = []
+        self.doors = []
+        self.individuals = []
 
-    client.manipulation.add_ind_to_class('E', 'LOCATION')
-    client.manipulation.add_objectprop_to_ind('isIn', 'Robot1', 'E')
-    print('Robot is in location E waiting to receive information.')
+    def marker_cb(self, msg):
+        self.markers_id = msg.data
 
-    # Ask the user how many corridors should be created
-    n_corridors = input('Insert the number of corridors: ')
+        # wait for the server to be available
+        rospy.wait_for_service('/room_info')
 
-    while(n_corridors.isdigit() == False):
-        n_corridors = input('Wrong type, please enter a number: ')
-    n_corridors = int(n_corridors)
+        for i in range(0, len(self.markers_id)):
+            try:
+                # send a request to the server to get info about the ID
+                res = self.get_info(self.markers_id[i])
 
-    room_index = 0
-    door_index = 0
-    # Add all the corridors
-    for i in range(0, n_corridors):
-        corridors.append('C'+str(i+1))
-        client.manipulation.add_ind_to_class(corridors[i], 'LOCATION')
-        print('Added corridor '+ corridors[i])
-        # Ask the user how many rooms the i-th corridor has
-        n_rooms_corridor = input('How many rooms does corridor ' + corridors[i] + ' have? ')
-        while(n_rooms_corridor.isdigit() == False):
-            n_rooms_corridor = input('Wrong type, please enter a number: ')
-        # Add all the rooms and the correspondent doors
-        for j in range(0, int(n_rooms_corridor)):
-            rooms.append('R'+str(room_index+1))
-            doors.append('D'+str(door_index+1))
-            client.manipulation.add_ind_to_class(rooms[room_index], 'LOCATION')
-            print('Added room ' + rooms[room_index])
-            client.manipulation.add_ind_to_class(doors[door_index], 'DOOR')
-            client.manipulation.add_dataprop_to_ind('visitedAt', rooms[room_index], 'Long', str(int(time.time())))
-            # Connect the i-th corridor with the j-th room
-            client.manipulation.add_objectprop_to_ind('hasDoor', rooms[room_index], doors[door_index])
-            client.manipulation.add_objectprop_to_ind('hasDoor', corridors[i], doors[door_index])
-            print('Added door ' + doors[door_index] + ' connecting corridor ' + corridors[i] + ' with room ' + rooms[room_index])
-            door_index += 1
-            room_index += 1
-        # Create a door connecting the corridor to room E
-        doors.append('D'+str(door_index+1))
-        client.manipulation.add_ind_to_class(doors[door_index], 'DOOR')
-        client.manipulation.add_objectprop_to_ind('hasDoor', 'E', doors[door_index])
-        client.manipulation.add_objectprop_to_ind('hasDoor', corridors[i], doors[door_index])
-        print('Added door ' + doors[door_index] + ' connecting corridor E with corridor ' + corridors[i])
-        door_index += 1
-    # Add corridor E to the list of corridors
-    corridors.append('E')
-    n_corridors += 1
+                if res.room is not "No room associated with this marker ID." and res.room not in self.individuals:
+                    # store usefull variables
+                    self.individuals.append(res.room)
+                    self.rooms_coordinates.room = res.room
+                    self.rooms_coordinates.x = res.x
+                    self.rooms_coordinates.y = res.y
 
-    # Connect all the corridors with a door
-    for k in range(0, n_corridors-2):
-        doors.append('D'+str(door_index+1))
-        client.manipulation.add_ind_to_class(doors[door_index], 'DOOR')
-        client.manipulation.add_objectprop_to_ind('hasDoor', corridors[k], doors[door_index])
-        client.manipulation.add_objectprop_to_ind('hasDoor', corridors[k+1], doors[door_index])
-        print('Added door ' + doors[door_index] + ' connecting corridor ' + corridors [k] + ' with corridor ' + corridors[k+1])
-        door_index += 1
+                    # update the ontology
+                    self.armor_client.manipulation.add_ind_to_class(res.room, 'LOCATION')
+                    self.armor_client.manipulation.add_dataprop_to_ind('visitedAt', res.room, 'Long', str(int(time.time())))
 
-    # Disjoint all the individuals
-    inds = rooms + corridors + doors
-    client.manipulation.disj_inds(inds)
+                    for j in range(0, len(res.connections)):
+                        # store usefull variables
+                        if res.connections[j].through_door not in self.individuals:
+                            self.individuals.append(res.connections[j].through_door)
+
+                        # update the ontology
+                        self.armor_client.manipulation.add_objectprop_to_ind('hasDoor', res.room, res.connections[j].through_door)
+
+
+            except rospy.ServiceException as e:
+                print(e)
+
+
+        # Disjoint all the individuals
+        self.armor_client.manipulation.disj_inds(self.individuals)
      
-    # Apply changes
-    client.utils.apply_buffered_changes()
-    client.utils.sync_buffered_reasoner()
+        # Apply changes
+        self.armor_client.utils.apply_buffered_changes()
+        self.armor_client.utils.sync_buffered_reasoner()
+
+if __name__== '__main__':
+
+    rospy.init_node('load_ontology')
+    rospy.spin()

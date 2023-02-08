@@ -33,9 +33,6 @@ class PlaningAction(object):
                                       auto_start=False)
         self._as.start()
         # Log information.
-        log_msg = (f'`{anm.ACTION_PLANNER}` Action Server initialised. It will create random path with a number of point '
-                   f'spanning in [{self._random_plan_points[0]}, {self._random_plan_points[1]}). Each point will be generated '
-                   f'with a delay spanning in [{self._random_plan_time[0]}, {self._random_plan_time[1]}).')
       
     # The callback invoked when a client set a goal to the `planner` server.
     # This function will return a list of random points (i.e., the plan) when the fist point

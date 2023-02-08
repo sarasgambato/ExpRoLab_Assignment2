@@ -24,8 +24,6 @@ class ControllingAction(object):
         self._as.start()
 
         # Log information.
-        log_msg = (f'`{anm.ACTION_CONTROLLER}` Action Server initialised.')
-        rospy.loginfo(anm.tag_log(log_msg, LOG_TAG))
 
 
     def execute_callback(self, goal):

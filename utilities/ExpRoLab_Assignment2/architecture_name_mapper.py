@@ -34,7 +34,7 @@ SERVER_SET_POSE = 'state/set_pose'
 TOPIC_BATTERY_LOW = 'state/battery_low'
 
 # The name of the topic where the list of markers' ID is published
-TOPIC_MARKER_LIST = 'list_topic'
+TOPIC_MARKER_LIST = 'id_list'
 # ---------------------------------------------------------
 
 
