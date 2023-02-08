@@ -1,4 +1,4 @@
-# ExpRoLab Assignment2
+# ExpRoLab Assignment 2
 The code documentation for this assignment can be found here.
 
 ## Introduction
