@@ -13,12 +13,17 @@ We were provided with [this package](https://github.com/CarmineD8/assignment2) a
 ## Software architecture
 The user can find a detailed description of the software architecture that was used [here](https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#software-architecture).
 
-However, some changes were done.
+However, some changes were done:
+- The author did some changes in the `planner` and `controller` nodes by author [Luca Buoncompagni](https://github.com/buoncubi)
+  - in the `planner` the via points that are calculated are taken from the linspace between the start position of the robot (the first via point) and the target position (the last via point);
+  - in the `controller` node the robot is ctually controlled through the `move_base` simple action client in order to reach the last via point, which is the target.
+
+the goal that is sent to the `planner` is the actual room the the robot is required to reach 
 
 ## Installation & running
 ### Installation
 To correctly use this software, the user must follow these steps to install the required packages/repositories.
-1. Given that the author decided to use the files [planner.py](https://github.com/buoncubi/arch_skeleton/blob/main/scripts/planner.py) and [controller.py](https://github.com/buoncubi/arch_skeleton/blob/main/scripts/controller.py) from the repository [arch_skeleton](https://github.com/buoncubi/arch_skeleton) (by author [Luca Buoncompagni](https://github.com/buoncubi)), the user must clone the mentioned repository and the current one in the ROS workspace.
+1. Given that the author decided to use the file [topological_map.owl](https://github.com/buoncubi/topological_map/blob/main/topological_map.owl) from the repository [topological_map](https://github.com/buoncubi/topological_map) (by author [Luca Buoncompagni](https://github.com/buoncubi)), the user must clone the mentioned repository and the current one in the ROS workspace.
 2. Install the [aRMOR package](https://github.com/EmaroLab/armor) by following [this tutorial](https://github.com/EmaroLab/armor/issues/7).
 3. Clone the [armor_py_api](https://github.com/EmaroLab/armor_py_api) repository in your ROS workspace.
 4. Perform what is described in these [notes](https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#note).
