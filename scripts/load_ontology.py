@@ -15,17 +15,17 @@ Clients:
 
 import rospy
 import time
-from std_msgs import Int32MultiArray
+import random
 from armor_api.armor_client import ArmorClient
 from os.path import dirname, realpath
-from helper import InterfaceHelper
-from ExpRoLab_Assignment2.srv import RoomInformation
+from ExpRoLab_Assignment2.srv import RoomInformation, LoadMap, LoadMapResponse
+from ExpRoLab_Assignment2.msg import RoomCoordinate
 
-class LoadMap:
+class LoadMapService():
 
     def __init__(self):
         # Armor stuff
-        self.armor_client = ArmorClient("assignment", "my_ontology")
+        self.armor_client = ArmorClient("armor_client", "my_ontology")
         self.path = dirname(realpath(__file__))
         # Put the path of the file.owl
         self.path = self.path + "/../../topological_map/"
@@ -34,60 +34,71 @@ class LoadMap:
         self.armor_client.utils.mount_on_ref()
         self.armor_client.utils.set_log_to_terminal(True)
 
-        # Define the subscriber to the topic in which the list with the markers' ID is published
-        rospy.Subscriber("/id_list", Int32MultiArray, self.marker_cb)
         # Connect to marker_server to retrieve info
         self.get_info = rospy.ServiceProxy("/room_info", RoomInformation)
 
         # Variables
-        self.locations = []
-        self.rooms_coordinates = []
-        self.doors = []
+        self.room_coordinates = []
+        self.room_coordinates = RoomCoordinate()
         self.individuals = []
+        self.locations = []
 
-    def marker_cb(self, msg):
-        self.markers_id = msg.data
+    def handle_load_map(self, request):
+        # handle the request and load the map
 
         # wait for the server to be available
-        rospy.wait_for_service('/room_info')
+        rospy.wait_for_service("/room_info")
+        print(request)
+       
+        try:
+            # send a request to the server to get info about the ID
+            res = self.get_info(request.marker_id)
 
-        for i in range(0, len(self.markers_id)):
-            try:
-                # send a request to the server to get info about the ID
-                res = self.get_info(self.markers_id[i])
+            if res.room != "No room associated with this marker ID." and res.room not in self.individuals:
+                # store usefull variables
+                self.individuals.append(res.room)
+                self.locations.append(res.room)
+                self.room_coordinates.room = res.room
+                self.room_coordinates.x = res.x
+                self.room_coordinates.y = res.y
 
-                if res.room is not "No room associated with this marker ID." and res.room not in self.individuals:
+                # update the ontology
+                self.armor_client.manipulation.add_ind_to_class(res.room, 'LOCATION')
+                self.armor_client.manipulation.add_dataprop_to_ind('visitedAt', res.room, 'Long', str(int(time.time())))
+
+                # if the room is the recharging one, place the robot there
+                if res.room == "E":
+                    self.armor_client.manipulation.add_objectprop_to_ind("isIn", "Robot1", "E")
+
+                for j in range(0, len(res.connections)):
                     # store usefull variables
-                    self.individuals.append(res.room)
-                    self.rooms_coordinates.room = res.room
-                    self.rooms_coordinates.x = res.x
-                    self.rooms_coordinates.y = res.y
+                    if res.connections[j].through_door not in self.individuals:
+                        self.individuals.append(res.connections[j].through_door)
 
                     # update the ontology
-                    self.armor_client.manipulation.add_ind_to_class(res.room, 'LOCATION')
-                    self.armor_client.manipulation.add_dataprop_to_ind('visitedAt', res.room, 'Long', str(int(time.time())))
-
-                    for j in range(0, len(res.connections)):
-                        # store usefull variables
-                        if res.connections[j].through_door not in self.individuals:
-                            self.individuals.append(res.connections[j].through_door)
-
-                        # update the ontology
-                        self.armor_client.manipulation.add_objectprop_to_ind('hasDoor', res.room, res.connections[j].through_door)
+                    self.armor_client.manipulation.add_objectprop_to_ind('hasDoor', res.room, res.connections[j].through_door)
 
 
-            except rospy.ServiceException as e:
-                print(e)
-
+        except rospy.ServiceException as e:
+            print(e)
 
         # Disjoint all the individuals
         self.armor_client.manipulation.disj_inds(self.individuals)
-     
         # Apply changes
         self.armor_client.utils.apply_buffered_changes()
         self.armor_client.utils.sync_buffered_reasoner()
 
+        return LoadMapResponse(self.room_coordinates)
+
 if __name__== '__main__':
 
-    rospy.init_node('load_ontology')
+    # Initialize the ROS node
+    rospy.init_node('load_map_service')
+
+    # Initialize the LoadMapService class
+    load_map = LoadMapService()
+
+    service = rospy.Service('/load_map', LoadMap, load_map.handle_load_map)
+
+    # Spin to keep the node running
     rospy.spin()

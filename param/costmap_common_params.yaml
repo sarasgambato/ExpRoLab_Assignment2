@@ -1,5 +1,5 @@
 max_obstacle_height: 0.60  
-obstacle_range: 3.0
+obstacle_range: 1.0
 raytrace_range: 3.0
 robot_radius: 0.15
 

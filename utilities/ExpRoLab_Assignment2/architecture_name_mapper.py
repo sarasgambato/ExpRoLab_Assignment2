@@ -12,10 +12,6 @@ have to do so in every file, it is sufficient to change them here.
 """
 import rospy
 
-# The name of the parameter to define the environment size.
-# It should be a list [max_x, max_y] such that x:[0, max_x) and y:[0, max_y).
-PARAM_ENVIRONMENT_SIZE = 'config/environment_size'
-
 # The name of parameter to set the initial robot position.
 PARAM_INITIAL_POSE = 'state/initial_pose'
 # ---------------------------------------------------------
@@ -34,7 +30,7 @@ SERVER_SET_POSE = 'state/set_pose'
 TOPIC_BATTERY_LOW = 'state/battery_low'
 
 # The name of the topic where the list of markers' ID is published
-TOPIC_MARKER_LIST = 'id_list'
+TOPIC_MARKER_LIST = '/id_list'
 # ---------------------------------------------------------
 
 

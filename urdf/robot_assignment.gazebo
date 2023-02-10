@@ -35,9 +35,9 @@
         <wheelSeparation>0.3</wheelSeparation>
         <wheelDiameter>0.2</wheelDiameter>
         <torque>0.1</torque>
-        <commandTopic>cmd_vel</commandTopic>
-        <odometryTopic>odom</odometryTopic>
-        <odometryFrame>odom</odometryFrame>
+        <commandTopic>/cmd_vel</commandTopic>
+        <odometryTopic>/odom</odometryTopic>
+        <odometryFrame>/odom</odometryFrame>
         <robotBaseFrame>link_chassis</robotBaseFrame>
         <rosDebugLevel>na</rosDebugLevel>
         <publishWheelTF>true</publishWheelTF>
@@ -61,10 +61,10 @@
 		<sensor type="camera" name="camera1">
 			<update_rate>30.0</update_rate>
 			<camera name="head">
-				<horizontal_fov>0.5</horizontal_fov>
+				<horizontal_fov>1.047</horizontal_fov>
 				<image>
-					  <width>800</width>
-					  <height>800</height>
+					  <width>1280</width>
+					  <height>720</height>
 					  <format>R8G8B8</format>
 				</image>
 				<clip>
@@ -122,8 +122,7 @@
                 </noise>
             </ray>
             <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
-                <topicName>robot_assignment/laser/scan</topicName>
-                <robotNamespace>robot_assignment</robotNamespace>
+                <topicName>scan</topicName>
                 <frameName>laser</frameName>
             </plugin>
         </sensor>

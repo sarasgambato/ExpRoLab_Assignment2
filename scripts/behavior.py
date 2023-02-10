@@ -24,7 +24,8 @@ from smach import StateMachine, State
 from load_ontology import LoadMap
 from ExpRoLab_Assignment2 import architecture_name_mapper as anm
 from helper import InterfaceHelper, BehaviorHelper
-from ExpRoLab_Assignment2.msg import Point, ControlGoal, PlanGoal
+from arch_skeleton.msg import Point, ControlGoal, PlanGoal
+from ExpRoLab_Assignment2.srv import LoadMap
 from os.path import dirname, realpath
 
 # list of states in the machine
@@ -52,8 +53,11 @@ class LoadOntology(State):
     """
 
     def __init__(self, helper):
-        State.__init__(self, outcomes=[TRANS_INITIALIZED])
+        State.__init__(self, outcomes=[TRANS_INITIALIZED],
+                       output_keys=['rooms'])
         self._helper = helper
+        # Usefull variables
+        self.rooms = {}
 
     def execute(self, userdata):
         """
@@ -69,9 +73,26 @@ class LoadOntology(State):
 
         while not self._helper._marker_list:
             pass
+        
+        # Create a client for the load_map service
+        load_map_client = rospy.ServiceProxy("/load_map", LoadMap)
 
-        mapClass = LoadMap
-        print('The map is loaded')
+        for i in range(0, len(self._helper._marker_list)):
+            # Wait for the service to become available
+            rospy.wait_for_service("/load_map")
+            try:
+                # Call the load_map service
+                res = load_map_client(self._helper._marker_list[i])
+                self.rooms[res.coordinate.room] = {"x": res.coordinate.x, "y": res.coordinate.y}
+                print("Added location " + res.coordinate.room + 
+                      " with coordinates (" + str(res.coordinate.x) + "," + str(res.coordinate.y) + ")")
+                
+            except rospy.ServiceException as e:
+                print("Service call failed: %s"%e)
+
+        print("Map successfully initialized.")
+        userdata.rooms = self.rooms
+
         return TRANS_INITIALIZED
 
 class Recharging(State):
@@ -113,9 +134,9 @@ class DecideTarget(State):
     def __init__(self, helper, sm_helper):
         self._helper = helper
         self._sm_helper = sm_helper
-        self.environment_size = rospy.get_param('config/environment_size')
         State.__init__(self, outcomes=[TRANS_DECIDED, TRANS_RECHARGING], 
-                       output_keys=['current_pose', 'choice', 'random_plan'])
+                       input_keys=['rooms'],
+                       output_keys=['current_pose', 'choice', 'path_plan'])
 
     def execute(self, userdata):
         """
@@ -128,8 +149,13 @@ class DecideTarget(State):
         Returns:
             Str: 'recharging' if the battery is low, 'target_acquired' otherwise
         """
-
+        goal = PlanGoal()
         current_pose, choice = self._sm_helper.decide_location()
+        rooms = userdata.rooms
+        # Get the coordinates of the decided location
+        goal.target.x = rooms[choice].get("x")
+        goal.target.y = rooms[choice].get("y")
+        self._helper.planner_client.send_goal(goal)
 
         while not rospy.is_shutdown():
             self._helper.mutex.acquire()
@@ -142,7 +168,7 @@ class DecideTarget(State):
                 if self._helper.planner_client.is_done():
                     userdata.choice = choice
                     userdata.current_pose = current_pose
-                    userdata.random_plan = self._helper.planner_client.get_results().via_points
+                    userdata.path_plan = self._helper.planner_client.get_results().via_points
                     return TRANS_DECIDED
 
             finally:
@@ -157,9 +183,8 @@ class CheckTarget(State):
     def __init__(self, helper, sm_helper):
         self._helper = helper
         self._sm_helper = sm_helper
-        self.environment_size = rospy.get_param('config/environment_size')
         State.__init__(self, outcomes=[TRANS_WENT_TARGET, TRANS_RECHARGING], 
-                       input_keys=['current_pose', 'choice', 'random_plan'])
+                       input_keys=['current_pose', 'choice', 'path_plan'])
 
     def execute(self, userdata):
         """
@@ -174,7 +199,7 @@ class CheckTarget(State):
         """
 
         # send the goal to the controller and check that the via points are reached
-        plan = userdata.random_plan
+        plan = userdata.path_plan
         current_pose = userdata.current_pose
         goal = ControlGoal(via_points=plan)
         self._helper.controller_client.send_goal(goal)
@@ -190,7 +215,6 @@ class CheckTarget(State):
                 if self._helper.controller_client.is_done():
                     choice = userdata.choice
                     self._sm_helper.check_location(current_pose, choice)
-                    rospy.sleep(5)
                     return TRANS_WENT_TARGET
             finally:
                 self._helper.mutex.release()
@@ -211,12 +235,14 @@ def main():
     sm_helper = BehaviorHelper()
 
     sm_main = StateMachine([])
+
     with sm_main:
         # Initialization state
         StateMachine.add(STATE_INIT, LoadOntology(helper),
-                         transitions={TRANS_INITIALIZED: STATE_NORMAL})
+                        transitions={TRANS_INITIALIZED: STATE_NORMAL})
+
         # Inner fsm
-        sm_normal = StateMachine(outcomes=[TRANS_BATTERY_LOW])
+        sm_normal = StateMachine(outcomes=[TRANS_BATTERY_LOW], input_keys = ['rooms'])
         with sm_normal:
             # Decision state
             StateMachine.add(STATE_DECISION, DecideTarget(helper, sm_helper),

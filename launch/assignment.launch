@@ -4,8 +4,6 @@
     <include file="$(find ExpRoLab_Assignment2)/launch/simulation_gmapping.launch"/>
     <include file="$(find ExpRoLab_Assignment2)/launch/move_base.launch"/>
 
-    <rosparam param="env/markers"> 7 </rosparam>
-
     <arg name="model" default="$(find ExpRoLab_Assignment2)/urdf/robot_assignment.xacro"/>
 
 	<!-- these are the arguments you can pass this launch file, for example paused:=true -->
@@ -14,7 +12,7 @@
     <arg name="extra_gazebo_args" default=""/>
     <arg name="gui" default="true"/>
     <arg name="recording" default="false"/>
-    <arg name="world" default="assignment" />
+    <arg name="world" default="assignment_world" />
     <arg name="headless" default="false"/>
     <arg name="debug" default="false"/>
     <arg name="physics" default="ode"/>
@@ -63,8 +61,11 @@
         
     <!-- Launch the Server node -->
     <node name="marker_server" pkg="ExpRoLab_Assignment2" type="marker_server" />
+    <node name="load_map_service" pkg="ExpRoLab_Assignment2" type="load_ontology.py" output="screen" launch-prefix="xterm -fa 'Monospace' -fs 10 -e"/>
 
     <!-- Launch the node to detect the markers -->
+    <rosparam param="env/floor_markers"> 4 </rosparam>
+    <rosparam param="env/ceil_markers"> 3 </rosparam>
     <node name="detect_marker" pkg="ExpRoLab_Assignment2" type="detect_marker" output="screen" launch-prefix="xterm -fa 'Monospace' -fs 10 -e" />
 
     <!--Run a python script to send a servicec all to gazebo_ros to spawn a URDF robot -->
@@ -98,38 +99,38 @@
           type = "execute" 
           args="it.emarolab.armor.ARMORMainService"/>
 
-
     <!-- Run the architecture's component. -->
-    <rosparam param="state/initial_pose"> [0.0,  0.0] </rosparam>
+    <rosparam param="state/initial_pose"> [0.0, 0.0] </rosparam>
     <rosparam param="config/environment_size"> [10.0, 10.0] </rosparam>
-
     <rosparam param="test/random_plan_points"> [2, 8] </rosparam>
     <rosparam param="test/random_plan_time"> [0.2, 0.8] </rosparam>
-    <rosparam param="test/random_motion_time"> [0.1, 1.0] </rosparam>
 
     <node pkg = "ExpRoLab_Assignment2"  
           type = "behavior.py"      
-          name = "behavior"  
-          launch-prefix = "xterm -fa 'Monospace' -fs 10 -e"
-    > </node>
-    <node pkg = "ExpRoLab_Assignment2"  
-          type = "load_ontology.py"      
-          name = "load_ontology"  
-          launch-prefix = "xterm -fa 'Monospace' -fs 10 -e"
+          name = "behavior" 
+          output = "screen"
+          launch-prefix="xterm -fa 'Monospace' -fs 10 -e"
     > </node>
 
     <node pkg = "ExpRoLab_Assignment2"  
           type = "robot_states.py" 
           name = "robot_state"
+          output = "screen"
+          launch-prefix="xterm -fa 'Monospace' -fs 10 -e"
     > </node>
     
     <node pkg = "ExpRoLab_Assignment2"  
           type = "planner.py"
           name = "planner"
+          output = "screen"
+          launch-prefix="xterm -fa 'Monospace' -fs 10 -e"
     > </node>
     
     <node pkg = "ExpRoLab_Assignment2"  
           type = "controller.py"
           name = "controller"
+          output = "screen"
+          launch-prefix="xterm -fa 'Monospace' -fs 10 -e"
     > </node>
+
 </launch>

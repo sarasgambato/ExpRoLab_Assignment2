@@ -40,14 +40,16 @@ class DetectAruco
     aruco::MarkerDetector mDetector;
     std::vector<aruco::Marker> markers;
     
-    int totMarkers = 0;
+    int floor_markers = 0;
+    int ceil_markers = 0;
+    int current_size = 0;
     int markerSize = 0.05;
     std_msgs::Float64 msg;
     
     public:
     std::vector<int> markerID;
     ros::Publisher ID_pub;
-    int counter = -1;
+    float current_pose = 0;
 
     DetectAruco()
     {
@@ -59,7 +61,8 @@ class DetectAruco
         // subscribers
         camera_sub = nh.subscribe<sensor_msgs::Image>("/robot_assignment/camera1/image_raw", 1, &DetectAruco::CameraCallback, this);
 
-        ros::param::get("env/markers", totMarkers);
+        ros::param::get("env/floor_markers", floor_markers);
+        ros::param::get("env/ceil_markers", ceil_markers);
 
     }
 
@@ -85,78 +88,50 @@ class DetectAruco
         markers.clear();
 
         mDetector.detect(inImage_, markers, camParam_, markerSize, false);
-
-        if(counter >= 1)
+        
+        for (std::size_t i = 0; i < markers.size(); ++i)
         {
-            std::cout << "The ID of the detected marker detected is: ";
-            for (std::size_t i = 0; i < markers.size(); ++i)
+            if(!(std::find(markerID.begin(), markerID.end(), markers.at(i).id) != markerID.end()))
             {
-                std::cout << markers.at(i).id << " ";
-                if(!(std::find(markerID.begin(), markerID.end(), markers.at(i).id) != markerID.end()))
-                {
-                    markerID.push_back(markers.at(i).id);
-                }
+                markerID.push_back(markers.at(i).id);
+                std::cout << "The ID of the detected marker is: " << markers.at(i).id << " ";
+                std::cout << std::endl;
             }
-            std::cout << std::endl;
         }
     }
 
     void MoveArm(float offset)
     {   
-        if(counter == 1)
+        if(markerID.size() < floor_markers)
         {
-            msg.data = -1.5;
-            joint01_pub.publish(msg);
             msg.data = 0.3;
             joint02_pub.publish(msg);
-        }
-        if(counter == 2)
-        {
-            msg.data = 1.5;
+
+            msg.data = current_pose + offset;
+            current_pose = msg.data;
             joint01_pub.publish(msg);
         }
-        if(counter == 3)
+        else
         {
-            msg.data = 2.3;
-            joint01_pub.publish(msg);
-        }
-        if(counter == 4)
-        {
-            msg.data = 2.8;
-            joint01_pub.publish(msg);
-        }
-        if(counter == 5)
-        {
-            msg.data = -1.3;
-            joint01_pub.publish(msg);
             msg.data = -0.3;
             joint02_pub.publish(msg);
             msg.data = -0.2;
             joint03_pub.publish(msg);
-        }
-        if(counter == 6)
-        {
-            msg.data = 0.5;
+
+            msg.data = current_pose + offset;
+            current_pose = msg.data;
             joint01_pub.publish(msg);
-        }
-        if(counter == 7)
-        {
-            msg.data = 1.5;
-            joint01_pub.publish(msg);
-        }
-        if(counter > 7)
-        {
-            msg.data = 0.0;
-            joint01_pub.publish(msg);
-            joint02_pub.publish(msg);
-            joint03_pub.publish(msg);
         }
     }
 
     bool FinishDetection()
     {   
-        if(markerID.size() == totMarkers)
-        {
+        if(markerID.size() == floor_markers + ceil_markers)
+        {   
+            msg.data = 0.0;
+            joint01_pub.publish(msg);
+            joint02_pub.publish(msg);
+            joint03_pub.publish(msg);
             return true;
         }
         return false;
@@ -175,11 +150,10 @@ int main(int argc, char **argv)
     
     while(!DetectAruco.FinishDetection())
     {
-        //offset = 0.1 + static_cast <float> (rand()) / ( static_cast <float> (RAND_MAX/(0.5-0.1)));
+        offset = 0.4 + static_cast <float> (rand())/(static_cast <float> (RAND_MAX/(0.8-0.4)));
         DetectAruco.MoveArm(offset);
         ros::spinOnce();
         rate.sleep();
-        DetectAruco.counter++;
     }
     
     std_msgs::Int32MultiArray _IDList;
@@ -188,6 +162,7 @@ int main(int argc, char **argv)
         _IDList.data.push_back(i);
     }
     DetectAruco.ID_pub.publish(_IDList);
+    ros::spinOnce();
     
     return 0;
 }

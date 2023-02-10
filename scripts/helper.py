@@ -29,11 +29,9 @@ from actionlib import SimpleActionClient
 from threading import Lock
 from armor_api.armor_client import ArmorClient
 from ExpRoLab_Assignment2 import architecture_name_mapper as anm
-from std_msgs.msg import Bool, Int32MultiArray
-from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseActionFeedback
-from actionlib_msgs.msg import GoalStatusArray
-from ExpRoLab_Assignment2.msg import PlanAction, ControlAction
-from ExpRoLab_Assignment2.srv import SetPose, RoomInformation
+from std_msgs.msg import Bool, Int32MultiArray, Float64
+from arch_skeleton.msg import PlanAction, ControlAction
+from ExpRoLab_Assignment2.srv import SetPose
 
 client = ArmorClient("armor_client", "my_ontology")
 
@@ -221,12 +219,13 @@ class InterfaceHelper:
         # Define the callback associated with the battery low ROS subscribers
         rospy.Subscriber(anm.TOPIC_BATTERY_LOW, Bool, self.battery_callback_)
         # Define the callback associated with the marker ID ROS subscribers
-        rospy.Subscriber(anm.TOPIC_MARKER_LIST, Int32MultiArray, self.list_callback_)
+        rospy.Subscriber("/id_list", Int32MultiArray, self.list_callback_)
         # Define the clients for the the plan and control action servers
         self.planner_client = ActionClientHelper(anm.ACTION_PLANNER, PlanAction, mutex=self.mutex)
         self.controller_client = ActionClientHelper(anm.ACTION_CONTROLLER, ControlAction, mutex=self.mutex)
-        # Define the client for the marker server
-        self.marker_client = rospy.ServiceProxy('/room_info', RoomInformation)
+
+        # Variable to store the markers' ID
+        self._marker_list = []
 
     def reset_states(self):
         """
@@ -272,13 +271,12 @@ class InterfaceHelper:
         Returns:
             None
         """
-
+        
         # Acquire the mutex to assure the synchronization with the other subscribers and action clients
         self.mutex.acquire()
         try:
             # Get the battery level and set the relative state variable encoded in this class
             self._marker_list = msg.data
-
         finally:
             # Release the mutex to eventually unblock the other subscribers or action servers that are waiting
             self.mutex.release()
@@ -328,6 +326,8 @@ class BehaviorHelper:
         self.robot = 'Robot1'
         # If the recharging room has to be changed, change this value
         self.recharging_room = 'E'
+        # Publisher to the joint that moves the camera
+        self.joint01_pub = rospy.Publisher("/robot_assignment/joint1_position_controller/command", Float64, queue_size=1)
 
     def clean_list(self, type, list_):
         """
@@ -495,6 +495,21 @@ class BehaviorHelper:
         if target not in corridors: # the 'visitedAt' property of the corridors has not been considered, given that they will never be urgent
             last_visit = self.get_timestamp('visitedAt', target)
             client.manipulation.replace_dataprop_b2_ind('visitedAt', target, 'Long', now, last_visit)
+        # Check the room by rotating the camera of approximately 360 degrees
+        cam_pose = 0
+        msg = Float64()
+        print("here1")
+        while (cam_pose != 3):
+            print("here2")
+            cam_pose = cam_pose + 0.5
+            print("here3")
+            msg.data = cam_pose
+            print("here4")
+            self.joint01_pub.publish(msg)
+            print("here5")
+            rospy.sleep(0.2)
+        msg.data = 0
+        self.joint01_pub.publish(msg)
         print('Reached target...mmh...everything clear')
         client.utils.apply_buffered_changes()
         client.utils.sync_buffered_reasoner()      

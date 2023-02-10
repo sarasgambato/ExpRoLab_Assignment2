@@ -85,7 +85,7 @@
         <parent link="${parent}"/>
         <axis rpy="0 0 0" xyz="${axis_xyz}"/>
         <limit effort="10" velocity="10"/>
-        <joint_properties damping="1.0" friction="1.0"/>
+        <joint_properties damping="10.0" friction="0.1"/>
         </joint>
     </xacro:macro>
 
@@ -158,8 +158,8 @@
     <!-- Create the wheels of the robot -->
     <xacro:link_wheel name="link_right_wheel" />
     <xacro:link_wheel name="link_left_wheel" />
-    <xacro:continuous_joint name="joint_right_wheel" child="link_right_wheel" parent="link_chassis" origin_xyz="-0.05 0.15 0" axis_xyz="0 1 0"/>
-    <xacro:continuous_joint name="joint_left_wheel" child="link_left_wheel" parent="link_chassis" origin_xyz="-0.05 -0.15 0" axis_xyz="0 1 0"/>
+    <xacro:continuous_joint name="joint_right_wheel" child="link_right_wheel" parent="link_chassis" origin_xyz="-0.05 -0.15 0" axis_xyz="0 1 0"/>
+    <xacro:continuous_joint name="joint_left_wheel" child="link_left_wheel" parent="link_chassis" origin_xyz="-0.05 0.15 0" axis_xyz="0 1 0"/>
 
 
     <!-- Create the arm base link and its joint -->
@@ -243,7 +243,7 @@
         </collision>
     </link>
 
-    <xacro:fixed_joint name="laser_joint" child="laser" parent="link_chassis" origin_xyz="0.15 0 0.05" />
+    <xacro:fixed_joint name="laser_joint" child="laser" parent="link_chassis" origin_xyz="0.25 0 0.05" />
 
 
     <!-- Define the transmissions --> 
