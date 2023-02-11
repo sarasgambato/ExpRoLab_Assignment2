@@ -1,14 +1,14 @@
 /**
 * \file marker_server.cpp
 * \brief Server to build the map through the markers
-* \author Sara Sgambato
+* \author Carmine Recchiuto
 * \version 0.1
 * \date 27/01/2023
 *
 * \details
 *
 * Services: <BR>
-* /room_info
+* `/room_info`
 *
 * Description:
 * This node is a server which generates a response based on the request it receives. The request changes based 
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "marker_server");
 	ros::NodeHandle nh;
-	ros::ServiceServer oracle = nh.advertiseService("/room_info", markerCallback);
+	ros::ServiceServer oracle = nh.advertiseService( "/room_info", markerCallback);
 	ros::spin();
 	ros::shutdown();
 	return 0;

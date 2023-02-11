@@ -1,0 +1,344 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="class_detect_aruco" kind="class" language="C++" prot="public">
+    <compoundname>DetectAruco</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="class_detect_aruco_1a39b9799135fd1370949d49ccd97c1068" prot="private" static="no" mutable="no">
+        <type>ros::NodeHandle</type>
+        <definition>ros::NodeHandle DetectAruco::nh</definition>
+        <argsstring></argsstring>
+        <name>nh</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>ROS node handle </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="51" column="21" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1a1bdcbff2983f1c36684b8ca50b36fd4c" prot="private" static="no" mutable="no">
+        <type>ros::Publisher</type>
+        <definition>ros::Publisher DetectAruco::joint01_pub</definition>
+        <argsstring></argsstring>
+        <name>joint01_pub</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>ROS publisher to the 1st joint of the robot&apos;s arm </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="52" column="20" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1ac60d35ee13222f3dc1288c4f83d01f4b" prot="private" static="no" mutable="no">
+        <type>ros::Publisher</type>
+        <definition>ros::Publisher DetectAruco::joint02_pub</definition>
+        <argsstring></argsstring>
+        <name>joint02_pub</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>ROS publisher to the 2nd joint of the robot&apos;s arm </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="53" column="20" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1a56aad7577f948a09c59f714c13435934" prot="private" static="no" mutable="no">
+        <type>ros::Publisher</type>
+        <definition>ros::Publisher DetectAruco::joint03_pub</definition>
+        <argsstring></argsstring>
+        <name>joint03_pub</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>ROS publisher to the 3rd joint of the robot&apos;s arm </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="54" column="20" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1ae761ff8233e893b4f163ac115212a1de" prot="private" static="no" mutable="no">
+        <type>ros::Subscriber</type>
+        <definition>ros::Subscriber DetectAruco::camera_sub</definition>
+        <argsstring></argsstring>
+        <name>camera_sub</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>ROS subscriber to the camera image </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="55" column="21" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1a0c53d3004e10db49516079cb440d8c61" prot="private" static="no" mutable="no">
+        <type>aruco::MarkerDetector</type>
+        <definition>aruco::MarkerDetector DetectAruco::mDetector</definition>
+        <argsstring></argsstring>
+        <name>mDetector</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>ArUco marker detector </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="56" column="27" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1ac2070f0569ceb7354f43920a46346603" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; aruco::Marker &gt;</type>
+        <definition>std::vector&lt;aruco::Marker&gt; DetectAruco::markers</definition>
+        <argsstring></argsstring>
+        <name>markers</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>vector of ArUco markers </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="57" column="17" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1a535d5945f41a266222a929f9f2a7cf9f" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int DetectAruco::floor_markers</definition>
+        <argsstring></argsstring>
+        <name>floor_markers</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>number of markers on the floor </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="58" column="9" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="58" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1a3b4906303751f204bbc32ffc6ef1ce7d" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int DetectAruco::ceil_markers</definition>
+        <argsstring></argsstring>
+        <name>ceil_markers</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>number of markers on the top of the walls </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="59" column="9" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1ad1ca106dbe674d4f5f61ace75d67035c" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int DetectAruco::markerSize</definition>
+        <argsstring></argsstring>
+        <name>markerSize</name>
+        <initializer>= 0.05</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>size of a marker </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="60" column="9" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1acc2caeec414f462401cc57d930668f10" prot="private" static="no" mutable="no">
+        <type>std_msgs::Float64</type>
+        <definition>std_msgs::Float64 DetectAruco::msg</definition>
+        <argsstring></argsstring>
+        <name>msg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>message to send the joints&apos; positions </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="61" column="23" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_detect_aruco_1ab0a44c534a0250002d9a4a27922b093f" prot="public" static="no" mutable="no">
+        <type>std_msgs::Int32MultiArray</type>
+        <definition>std_msgs::Int32MultiArray DetectAruco::IDList</definition>
+        <argsstring></argsstring>
+        <name>IDList</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>message to send the list of IDs </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="64" column="31" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1a354268cd82f349439774e5c025a9a189" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; int &gt;</type>
+        <definition>std::vector&lt;int&gt; DetectAruco::markerID</definition>
+        <argsstring></argsstring>
+        <name>markerID</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>vector of IDs of the markers </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="65" column="17" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1adc0fda17c72acd5ea3f794c836acce2d" prot="public" static="no" mutable="no">
+        <type>ros::Publisher</type>
+        <definition>ros::Publisher DetectAruco::ID_pub</definition>
+        <argsstring></argsstring>
+        <name>ID_pub</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>ROS publisher to the list topic </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="66" column="20" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="66" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_detect_aruco_1aa7289f7a992fc1d5725ed902d732b909" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float DetectAruco::current_pose</definition>
+        <argsstring></argsstring>
+        <name>current_pose</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>current position of the robot&apos;s 1st joint </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="67" column="11" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="67" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_detect_aruco_1ae8cc6ad4b5d55a4c8dd77560b8ebfc0b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>DetectAruco::DetectAruco</definition>
+        <argsstring>()</argsstring>
+        <name>DetectAruco</name>
+        <briefdescription>
+<para>Constructor of the ArUco class. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>In the constructor the publishers and the subscriber are initialized. Also, The constructor takes two parameter relative to the ArUco markers in the environment, the ones on the floor and the ones on the top of the walls. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="75" column="5" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="75" bodyend="87"/>
+      </memberdef>
+      <memberdef kind="function" id="class_detect_aruco_1aa5b90097c9ae2b2f7203ed14b7399cd2" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void DetectAruco::CameraCallback</definition>
+        <argsstring>(const sensor_msgs::Image::ConstPtr &amp;msg)</argsstring>
+        <name>CameraCallback</name>
+        <param>
+          <type>const sensor_msgs::Image::ConstPtr &amp;</type>
+          <declname>msg</declname>
+        </param>
+        <briefdescription>
+<para>Callback of the subscriber to the /robot_assignment/camera1/image_raw topic. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>msg</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>image received</para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+In this callback the image is processed to see whether there are some markers. If some markers are detected, and they have not been detected before, their IDs are saved into a variable. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="97" column="10" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="97" bodyend="130"/>
+      </memberdef>
+      <memberdef kind="function" id="class_detect_aruco_1a0bbff1b9155521a56890b4e642a57990" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void DetectAruco::MoveArm</definition>
+        <argsstring>(float offset)</argsstring>
+        <name>MoveArm</name>
+        <param>
+          <type>float</type>
+          <declname>offset</declname>
+        </param>
+        <briefdescription>
+<para>Method to move the robot&apos;s arm. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>offset</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>float number</para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The test results</para>
+</simplesect>
+The robot arm is moved firstly to detect all the markers on the floor, then it is moved to detect all the markers on the walls. To do so, the joint responsible of rotating around the z axis is moved every time of &lt;offset&gt; radians, until all markers are detected. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="142" column="10" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="142" bodyend="164"/>
+      </memberdef>
+      <memberdef kind="function" id="class_detect_aruco_1aaaa75855c144db1612cc272c5036755f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool DetectAruco::FinishDetection</definition>
+        <argsstring>()</argsstring>
+        <name>FinishDetection</name>
+        <briefdescription>
+<para>Method to check if all markers have been detected. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>true if all markers have been detected, false otherwise</para>
+</simplesect>
+The size of the list containing the IDs of the detected markers is compared with the total number of markers to detect. Once all markers have been detected, the robot&apos;s arm is put back to its initial position. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="174" column="10" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="174" bodyend="185"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Class to detect the ArUco markers in the environment. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>This class subscribes to the topic relative to what the robot is seeing and it publishes the joints&apos; positions in order for the robot arm to move, and once a marker has been detected its ID is stored inside a variable. </para>
+    </detaileddescription>
+    <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" line="49" column="1" bodyfile="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src/detect_marker.cpp" bodystart="48" bodyend="186"/>
+    <listofallmembers>
+      <member refid="class_detect_aruco_1ae761ff8233e893b4f163ac115212a1de" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>camera_sub</name></member>
+      <member refid="class_detect_aruco_1aa5b90097c9ae2b2f7203ed14b7399cd2" prot="public" virt="non-virtual"><scope>DetectAruco</scope><name>CameraCallback</name></member>
+      <member refid="class_detect_aruco_1a3b4906303751f204bbc32ffc6ef1ce7d" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>ceil_markers</name></member>
+      <member refid="class_detect_aruco_1aa7289f7a992fc1d5725ed902d732b909" prot="public" virt="non-virtual"><scope>DetectAruco</scope><name>current_pose</name></member>
+      <member refid="class_detect_aruco_1ae8cc6ad4b5d55a4c8dd77560b8ebfc0b" prot="public" virt="non-virtual"><scope>DetectAruco</scope><name>DetectAruco</name></member>
+      <member refid="class_detect_aruco_1aaaa75855c144db1612cc272c5036755f" prot="public" virt="non-virtual"><scope>DetectAruco</scope><name>FinishDetection</name></member>
+      <member refid="class_detect_aruco_1a535d5945f41a266222a929f9f2a7cf9f" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>floor_markers</name></member>
+      <member refid="class_detect_aruco_1adc0fda17c72acd5ea3f794c836acce2d" prot="public" virt="non-virtual"><scope>DetectAruco</scope><name>ID_pub</name></member>
+      <member refid="class_detect_aruco_1ab0a44c534a0250002d9a4a27922b093f" prot="public" virt="non-virtual"><scope>DetectAruco</scope><name>IDList</name></member>
+      <member refid="class_detect_aruco_1a1bdcbff2983f1c36684b8ca50b36fd4c" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>joint01_pub</name></member>
+      <member refid="class_detect_aruco_1ac60d35ee13222f3dc1288c4f83d01f4b" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>joint02_pub</name></member>
+      <member refid="class_detect_aruco_1a56aad7577f948a09c59f714c13435934" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>joint03_pub</name></member>
+      <member refid="class_detect_aruco_1a354268cd82f349439774e5c025a9a189" prot="public" virt="non-virtual"><scope>DetectAruco</scope><name>markerID</name></member>
+      <member refid="class_detect_aruco_1ac2070f0569ceb7354f43920a46346603" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>markers</name></member>
+      <member refid="class_detect_aruco_1ad1ca106dbe674d4f5f61ace75d67035c" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>markerSize</name></member>
+      <member refid="class_detect_aruco_1a0c53d3004e10db49516079cb440d8c61" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>mDetector</name></member>
+      <member refid="class_detect_aruco_1a0bbff1b9155521a56890b4e642a57990" prot="public" virt="non-virtual"><scope>DetectAruco</scope><name>MoveArm</name></member>
+      <member refid="class_detect_aruco_1acc2caeec414f462401cc57d930668f10" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>msg</name></member>
+      <member refid="class_detect_aruco_1a39b9799135fd1370949d49ccd97c1068" prot="private" virt="non-virtual"><scope>DetectAruco</scope><name>nh</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -10,14 +10,20 @@
 * \param [in] floor_markers number of markers on the floor.
 * \param [in] ceil_markers number of markers on the top of the walls.
 * 
-* * Subscriber to: <BR>
-* /robot_assignment/camera1/image_raw topic to get the robot vision through the camera mounted on the arm of the robot
+*
+* Subscribes to: <BR>
+* `/robot_assignment/camera1/image_raw` topic to get the robot vision through the camera mounted on the arm of the robot
 * 
-* Publisher to: <BR>
-* /robot_assignment/joint1_position_controller/command topic of the 1st joint of the robot's arm
-* /robot_assignment/joint2_position_controller/command topic of the 2nd joint of the robot's arm
-* /robot_assignment/joint3_position_controller/command topic of the 3rd joint of the robot's arm
-* /id_list topic in which all the markers' ID are published
+*
+* Publishes to: <BR>
+*
+* `/robot_assignment/joint1_position_controller/command` topic of the 1st joint of the robot's arm
+*
+* `/robot_assignment/joint2_position_controller/command` topic of the 2nd joint of the robot's arm
+*
+* `/robot_assignment/joint3_position_controller/command` topic of the 3rd joint of the robot's arm
+*
+* `/id_list` topic in which all the markers' ID are published
 * 
 * Description:
 * The node is used to detect the ArUco markers that are in the environment. The joints of the robot's arm are moved via
@@ -124,7 +130,7 @@ class DetectAruco
     }
 
     /**
-    * \brief Member to move the robot's arm.
+    * \brief Method to move the robot's arm.
     *
     * \param offset float number
     *
@@ -158,7 +164,7 @@ class DetectAruco
     }
 
     /**
-    * \brief Member to check if all markers have been detected.
+    * \brief Method to check if all markers have been detected.
     *
     * \return true if all markers have been detected, false otherwise
     *

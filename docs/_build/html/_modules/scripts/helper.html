@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.helper &mdash; ExpRoLab_Assignment2 v.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> ExpRoLab_Assignment2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts.html">scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ExpRoLab_Assignment2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scripts.helper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scripts.helper</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: helper</span>
+<span class="sd">    :platform: ROS</span>
+<span class="sd">    :synopsis: Python module used to simplify the fsm code.</span>
+<span class="sd">    </span>
+<span class="sd">.. moduleauthor:: Sara Sgambato s4648592@studenti.unige.it</span>
+
+<span class="sd">This module implements three classes representing three different helpers: one to simplify the implementation of a client for ROS action servers, </span>
+<span class="sd">one that manages the synchronization with subscribers and action servers and one to help the fsm machine taking decisions.</span>
+
+<span class="sd">Clients:</span>
+<span class="sd">    :attr:`armor_client`: client to communicate with the aRMOR server</span>
+
+<span class="sd">    :attr:`move_base`: client to communicate with move_base in order for the robot to move in the simulation</span>
+
+<span class="sd">Subscribes to:</span>
+<span class="sd">    :attr:`state/battery_low`: where the state of the battery (high/low) is published</span>
+<span class="sd">    </span>
+<span class="sd">    :attr:`id_list`: where the list with the markers&#39; ID is published</span>
+
+<span class="sd">Publishes to:</span>
+<span class="sd">    :attr:`/robot_assignment/joint1_position_controller/command`: to move the 1st joint of the robot&#39;s arm</span>
+
+<span class="sd">Servers:</span>
+<span class="sd">    :attr:`state/set_pose`: server to set the current robot pose, stored in the &#39;robot_state&#39; node</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">actionlib</span> <span class="kn">import</span> <span class="n">SimpleActionClient</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
+<span class="kn">from</span> <span class="nn">armor_api.armor_client</span> <span class="kn">import</span> <span class="n">ArmorClient</span>
+<span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2</span> <span class="kn">import</span> <span class="n">architecture_name_mapper</span> <span class="k">as</span> <span class="n">anm</span>
+<span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Int32MultiArray</span><span class="p">,</span> <span class="n">Float64</span>
+<span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2.srv</span> <span class="kn">import</span> <span class="n">SetPose</span>
+<span class="kn">from</span> <span class="nn">move_base_msgs.msg</span> <span class="kn">import</span> <span class="n">MoveBaseAction</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">ArmorClient</span><span class="p">(</span><span class="s2">&quot;armor_client&quot;</span><span class="p">,</span> <span class="s2">&quot;my_ontology&quot;</span><span class="p">)</span>
+
+<span class="c1"># Parameter for the busy time in the recharge function of class BehaviorHelper</span>
+<span class="n">BUSY_TIME</span> <span class="o">=</span> <span class="n">anm</span><span class="o">.</span><span class="n">BUSY_TIME</span>
+<span class="n">SLEEP_TIME</span> <span class="o">=</span> <span class="n">anm</span><span class="o">.</span><span class="n">SLEEP_TIME</span>
+
+<div class="viewcode-block" id="ActionClientHelper"><a class="viewcode-back" href="../../scripts.html#scripts.helper.ActionClientHelper">[docs]</a><span class="k">class</span> <span class="nc">ActionClientHelper</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that simplifies the implementation of a client for ROS action servers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_name</span><span class="p">,</span> <span class="n">action_type</span><span class="p">,</span> <span class="n">done_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">feedback_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mutex</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Initialise the state of this client, i.e.,  `_is_running`, `_is_done`, and `_results`</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_client_states</span><span class="p">()</span>
+        <span class="c1"># Set the name of the server to be invoked</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_service_name</span> <span class="o">=</span> <span class="n">service_name</span>
+        <span class="c1"># Get or create a new mutex</span>
+        <span class="k">if</span> <span class="n">mutex</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span> <span class="o">=</span> <span class="n">mutex</span>
+        <span class="c1"># Instantiate a simple ROS-based action client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">SimpleActionClient</span><span class="p">(</span><span class="n">service_name</span><span class="p">,</span> <span class="n">action_type</span><span class="p">)</span>
+        <span class="c1"># Set the done and feedback callbacks defined by the class using this client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_external_done_cb</span> <span class="o">=</span> <span class="n">done_callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_external_feedback_cb</span> <span class="o">=</span> <span class="n">feedback_callback</span>
+        <span class="c1"># Wait for the action server to be alive</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">wait_for_server</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ActionClientHelper.send_goal"><a class="viewcode-back" href="../../scripts.html#scripts.helper.ActionClientHelper.send_goal">[docs]</a>    <span class="k">def</span> <span class="nf">send_goal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to send the action server a new goal only if it is not running; the server can be used only by one client at a time.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            goal(PlanGoal): goal to be sent made up of two Points, start and target in (x, y) coordinates</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span><span class="p">:</span>
+            <span class="c1"># Start the action server</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">send_goal</span><span class="p">(</span><span class="n">goal</span><span class="p">,</span>
+                                   <span class="n">done_cb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_callback_</span><span class="p">,</span>
+                                   <span class="n">feedback_cb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feedback_callback_</span><span class="p">)</span>
+            <span class="c1"># Set the client&#39;s states</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_done</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SENDING GOALS&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: to send a new goal cancel the current request first!&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ActionClientHelper.cancel_goals"><a class="viewcode-back" href="../../scripts.html#scripts.helper.ActionClientHelper.cancel_goals">[docs]</a>    <span class="k">def</span> <span class="nf">cancel_goals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fucntion to stop the computation of the action server, only if it is actually computing.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span><span class="p">:</span>
+            <span class="c1"># Stop the computation</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">cancel_all_goals</span><span class="p">()</span>
+            <span class="c1"># Reset the client&#39;s state</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset_client_states</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: cannot cancel a not running service!&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ActionClientHelper.reset_client_states"><a class="viewcode-back" href="../../scripts.html#scripts.helper.ActionClientHelper.reset_client_states">[docs]</a>    <span class="k">def</span> <span class="nf">reset_client_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to reset the client state variables stored in this class.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ActionClientHelper.feedback_callback_"><a class="viewcode-back" href="../../scripts.html#scripts.helper.ActionClientHelper.feedback_callback_">[docs]</a>    <span class="k">def</span> <span class="nf">feedback_callback_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feedback</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function called when the action server has to send a feedback to the client.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            feedback: feedback message to be sent to the client</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Call the method provided by the node that uses this action client to manage a feedback</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_external_feedback_cb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_external_feedback_cb</span><span class="p">(</span><span class="n">feedback</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># Realise the mutex to unblock ROS-based thread waiting on the same mutex</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ActionClientHelper.done_callback_"><a class="viewcode-back" href="../../scripts.html#scripts.helper.ActionClientHelper.done_callback_">[docs]</a>    <span class="k">def</span> <span class="nf">done_callback_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function called when the action server has finished its computation.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            status: status of the action server</span>
+<span class="sd">            results: results from the action server</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Set the client&#39;s states</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_done</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="o">=</span> <span class="n">results</span>
+            <span class="c1"># Call the method provided by the node that uses this action client to manage a result</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_external_done_cb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_external_done_cb</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ActionClientHelper.is_done"><a class="viewcode-back" href="../../scripts.html#scripts.helper.ActionClientHelper.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function returning whether the action server finished its computation or not. This method should be mutex safe.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Bool: &#39;True&#39; if the action server finished its computation, &#39;False&#39; otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_done</span></div>
+
+<div class="viewcode-block" id="ActionClientHelper.is_running"><a class="viewcode-back" href="../../scripts.html#scripts.helper.ActionClientHelper.is_running">[docs]</a>    <span class="k">def</span> <span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function returning whether the action server is running or not. This method should be mutex safe.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Bool: `True` if the action server is running, `False` otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span></div>
+
+<div class="viewcode-block" id="ActionClientHelper.get_results"><a class="viewcode-back" href="../../scripts.html#scripts.helper.ActionClientHelper.get_results">[docs]</a>    <span class="k">def</span> <span class="nf">get_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function that gets the result of the action server.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Result of the action server, if any, &#39;None&#39; otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_done</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: cannot get result&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="InterfaceHelper"><a class="viewcode-back" href="../../scripts.html#scripts.helper.InterfaceHelper">[docs]</a><span class="k">class</span> <span class="nc">InterfaceHelper</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that manages the synchronization with subscribers and action servers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Create a shared mutex to synchronize action clients and subscribers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+        <span class="c1"># Set the initial state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+        <span class="c1"># Define the callback associated with the battery low ROS subscribers</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">TOPIC_BATTERY_LOW</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">battery_callback_</span><span class="p">)</span>
+        <span class="c1"># Define the callback associated with the marker ID ROS subscribers</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">TOPIC_MARKER_LIST</span><span class="p">,</span> <span class="n">Int32MultiArray</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_callback_</span><span class="p">)</span>
+        <span class="c1"># Define the clients for the the plan and control action servers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">move_base_client</span> <span class="o">=</span> <span class="n">ActionClientHelper</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">CLIENT_MOVE_BASE</span><span class="p">,</span> <span class="n">MoveBaseAction</span><span class="p">,</span> <span class="n">mutex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="p">)</span>
+        <span class="c1"># Variable to store the markers&#39; ID</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_marker_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="InterfaceHelper.reset_states"><a class="viewcode-back" href="../../scripts.html#scripts.helper.InterfaceHelper.reset_states">[docs]</a>    <span class="k">def</span> <span class="nf">reset_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to reset the stimulus for the battery stored as state variable. </span>
+<span class="sd">        This function assumes that no states of the Finite State Machine run concurrently.</span>
+<span class="sd">        </span>
+<span class="sd">        Args: </span>
+<span class="sd">            None</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="InterfaceHelper.battery_callback_"><a class="viewcode-back" href="../../scripts.html#scripts.helper.InterfaceHelper.battery_callback_">[docs]</a>    <span class="k">def</span> <span class="nf">battery_callback_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function for the subscriber to get messages published from the `robot_state` node into the `/state/battery_low/` topic.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            msg(Bool): status of the battery</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Acquire the mutex to assure the synchronization with the other subscribers and action clients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Get the battery level and set the relative state variable encoded in this class</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># Release the mutex to eventually unblock the other subscribers or action servers that are waiting</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="InterfaceHelper.list_callback_"><a class="viewcode-back" href="../../scripts.html#scripts.helper.InterfaceHelper.list_callback_">[docs]</a>    <span class="k">def</span> <span class="nf">list_callback_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Callback of the subscriber to get messages published from the `detect_marker` node into the `/id_list` topic.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            msg(List): list of found markers</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Acquire the mutex to assure the synchronization with the other subscribers and action clients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Get the battery level and set the relative state variable encoded in this class</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_marker_list</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># Release the mutex to eventually unblock the other subscribers or action servers that are waiting</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="InterfaceHelper.is_battery_low"><a class="viewcode-back" href="../../scripts.html#scripts.helper.InterfaceHelper.is_battery_low">[docs]</a>    <span class="k">def</span> <span class="nf">is_battery_low</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fucntion to get the state variable encoded in this class about the battery level.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            None</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Bool: `True` if the battery is low, `False` otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span></div>
+
+<div class="viewcode-block" id="InterfaceHelper.init_robot_pose"><a class="viewcode-back" href="../../scripts.html#scripts.helper.InterfaceHelper.init_robot_pose">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">init_robot_pose</span><span class="p">(</span><span class="n">point</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to update the current position of the robot stored in the &#39;robot_state&#39; node.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            point(Point): point representing the robot pose in (x, y) coordinates</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Wait for the server to be initialised</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">SERVER_SET_POSE</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Call the service and set the current robot position</span>
+            <span class="n">service</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">SERVER_SET_POSE</span><span class="p">,</span> <span class="n">SetPose</span><span class="p">)</span>
+            <span class="n">service</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting initial robot position&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cannot set current robot position&quot;</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="BehaviorHelper"><a class="viewcode-back" href="../../scripts.html#scripts.helper.BehaviorHelper">[docs]</a><span class="k">class</span> <span class="nc">BehaviorHelper</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that implements some function useful for the fsm to take decisions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># If the main individual has to be changed, change this value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="s1">&#39;Robot1&#39;</span>
+        <span class="c1"># If the recharging room has to be changed, change this value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recharging_room</span> <span class="o">=</span> <span class="s1">&#39;E&#39;</span>
+        <span class="c1"># Publisher to the joint that moves the camera</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint01_pub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="s2">&quot;/robot_assignment/joint1_position_controller/command&quot;</span><span class="p">,</span> <span class="n">Float64</span><span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BehaviorHelper.clean_list"><a class="viewcode-back" href="../../scripts.html#scripts.helper.BehaviorHelper.clean_list">[docs]</a>    <span class="k">def</span> <span class="nf">clean_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">list_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to clean a list.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            type(Int): value specifying how to clean the string, given that timestamps </span>
+<span class="sd">                              and strings indicating locations have a different length</span>
+<span class="sd">            list_(Str): list that has to be cleaned</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list_(Str): cleaned list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">list_</span> <span class="o">=</span> <span class="n">list_</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">32</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">list_</span><span class="p">)):</span>
+                    <span class="n">list_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">list_</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">32</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">list_</span> <span class="o">=</span> <span class="n">list_</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">11</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">list_</span>  </div>
+
+<div class="viewcode-block" id="BehaviorHelper.get_queried"><a class="viewcode-back" href="../../scripts.html#scripts.helper.BehaviorHelper.get_queried">[docs]</a>    <span class="k">def</span> <span class="nf">get_queried</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to get the queried object.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            obj(Str): string representing the object we want to query</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Str: list of queried objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s1">&#39;position&#39;</span><span class="p">:</span>
+            <span class="n">list_</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;isIn&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_list</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">list_</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s1">&#39;reachable&#39;</span><span class="p">:</span>
+            <span class="n">list_</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;canReach&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">)</span>
+            <span class="n">list_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_list</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">list_</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">list_</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">list_</span> <span class="o">=</span> <span class="p">[</span><span class="n">list_</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">list_</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s1">&#39;urgencies&#39;</span><span class="p">:</span>
+            <span class="n">list_</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">ind_b2_class</span><span class="p">(</span><span class="s1">&#39;URGENT&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_list</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">list_</span><span class="p">)</span> 
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s1">&#39;corridors&#39;</span><span class="p">:</span>
+            <span class="n">list_</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">ind_b2_class</span><span class="p">(</span><span class="s1">&#39;CORRIDOR&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_list</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">list_</span><span class="p">)</span> </div>
+            
+
+<div class="viewcode-block" id="BehaviorHelper.get_timestamp"><a class="viewcode-back" href="../../scripts.html#scripts.helper.BehaviorHelper.get_timestamp">[docs]</a>    <span class="k">def</span> <span class="nf">get_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataprop</span><span class="p">,</span> <span class="n">ind</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to get the timestamp for the &#39;dataprop&#39; property of the &#39;ind&#39; individual.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            dataprop(Str): string representing the property for which we want the timestamp</span>
+<span class="sd">            ind(Str): string representing the individual of interest</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Str: cleaned timestamp of the property of the individual</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">dataprop_b2_ind</span><span class="p">(</span><span class="n">dataprop</span><span class="p">,</span> <span class="n">ind</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_list</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="BehaviorHelper.reason_reach"><a class="viewcode-back" href="../../scripts.html#scripts.helper.BehaviorHelper.reason_reach">[docs]</a>    <span class="k">def</span> <span class="nf">reason_reach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reachable</span><span class="p">,</span> <span class="n">position</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to decide in which location to go next. It is called when there are no urgent locations.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            reachable(Str): list of all the reachable locations</span>
+<span class="sd">            position(Str): string representing the current pose of the robot</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Str: the location in which the robot will go next</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">corridors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queried</span><span class="p">(</span><span class="s1">&#39;corridors&#39;</span><span class="p">)</span>
+        <span class="c1"># if there is no urgency, and the robot is already in a corridor, continuosly check the corridors</span>
+        <span class="k">if</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">corridors</span><span class="p">:</span>
+            <span class="n">corridors</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+            <span class="c1"># I assume that there is more then one corridor</span>
+            <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">corridors</span><span class="p">)</span>
+        <span class="c1"># if there is no urgency, and the robot is in a room, there will be only one reachable location</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">reachable</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="BehaviorHelper.reason_urg"><a class="viewcode-back" href="../../scripts.html#scripts.helper.BehaviorHelper.reason_urg">[docs]</a>    <span class="k">def</span> <span class="nf">reason_urg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reachable_urg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to decide how to manage the urgent locations. It is called only when there are urgent locations.</span>
+<span class="sd">        The robot goes in the most urgent location, which is the one that has not been visited for the longest time.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            reachable_urg(Str): list of all the reachable locations that are urgent</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Str: the location in which the robot will go next</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># if there is only one urgent location, go there</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reachable_urg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">reachable_urg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># else choose based on the timestamp</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">visits</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="n">reachable_urg</span><span class="p">:</span>
+                <span class="n">last_visit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timestamp</span><span class="p">(</span><span class="s1">&#39;visitedAt&#39;</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+                <span class="n">visits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">last_visit</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">reachable_urg</span><span class="p">[</span><span class="n">visits</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">visits</span><span class="p">))]</span></div>
+
+<div class="viewcode-block" id="BehaviorHelper.decide_location"><a class="viewcode-back" href="../../scripts.html#scripts.helper.BehaviorHelper.decide_location">[docs]</a>    <span class="k">def</span> <span class="nf">decide_location</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to decide in which location the robot will go to next.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            position(Str): current position of the robot</span>
+<span class="sd">            target(Str): string representing the location in which the robot will go to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queried</span><span class="p">(</span><span class="s1">&#39;position&#39;</span><span class="p">)</span>
+        <span class="n">reachable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queried</span><span class="p">(</span><span class="s1">&#39;reachable&#39;</span><span class="p">)</span>
+        <span class="n">urgencies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queried</span><span class="p">(</span><span class="s1">&#39;urgencies&#39;</span><span class="p">)</span>
+        <span class="n">reachable_urg</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">urgencies</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">reachable</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Current position: &#39;</span> <span class="o">+</span> <span class="n">position</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Reachable locations: [&#39;</span><span class="o">+</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">reachable</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;]&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Urgent: [&#39;</span><span class="o">+</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">reachable_urg</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;]&#39;</span><span class="p">)</span>
+
+        <span class="c1"># if there are no urgent locations to check, reason where to go next in a certain way</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">reachable_urg</span> <span class="o">==</span> <span class="p">[]):</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reason_reach</span><span class="p">(</span><span class="n">reachable</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+        <span class="c1"># if there are some urgent locations to check, reason in a different way</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reason_urg</span><span class="p">(</span><span class="n">reachable_urg</span><span class="p">)</span>
+            
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Going to visit location &#39;</span> <span class="o">+</span> <span class="n">target</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">position</span><span class="p">,</span> <span class="n">target</span></div>
+
+<div class="viewcode-block" id="BehaviorHelper.check_location"><a class="viewcode-back" href="../../scripts.html#scripts.helper.BehaviorHelper.check_location">[docs]</a>    <span class="k">def</span> <span class="nf">check_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to reach and check the location that the robot has to go to.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            position(Str): current position of the robot, which has to be updated</span>
+<span class="sd">            target(Str): location with which to update the robot position</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">replace_objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;isIn&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+        <span class="n">last_change</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timestamp</span><span class="p">(</span><span class="s1">&#39;now&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">)</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">replace_dataprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;now&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="s1">&#39;Long&#39;</span><span class="p">,</span> <span class="n">now</span><span class="p">,</span> <span class="n">last_change</span><span class="p">)</span>
+        <span class="n">corridors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queried</span><span class="p">(</span><span class="s1">&#39;corridors&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">corridors</span><span class="p">:</span> <span class="c1"># the &#39;visitedAt&#39; property of the corridors has not been considered, given that they will never be urgent</span>
+            <span class="n">last_visit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timestamp</span><span class="p">(</span><span class="s1">&#39;visitedAt&#39;</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">replace_dataprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;visitedAt&#39;</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="s1">&#39;Long&#39;</span><span class="p">,</span> <span class="n">now</span><span class="p">,</span> <span class="n">last_visit</span><span class="p">)</span>
+        <span class="c1"># Check the room</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_around</span><span class="p">()</span>        
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Reached target...mmh...everything clear&#39;</span><span class="p">)</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">apply_buffered_changes</span><span class="p">()</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sync_buffered_reasoner</span><span class="p">()</span> </div>
+
+<div class="viewcode-block" id="BehaviorHelper.look_around"><a class="viewcode-back" href="../../scripts.html#scripts.helper.BehaviorHelper.look_around">[docs]</a>    <span class="k">def</span> <span class="nf">look_around</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to check the location that the robot is into. It is done by rotating the camera of approximately 360 degrees.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cam_pose</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">Float64</span><span class="p">()</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">cam_pose</span> <span class="o">!=</span> <span class="mi">6</span><span class="p">):</span>
+            <span class="n">cam_pose</span> <span class="o">=</span> <span class="n">cam_pose</span> <span class="o">+</span> <span class="mf">0.5</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">cam_pose</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">joint01_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint01_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BehaviorHelper.recharge"><a class="viewcode-back" href="../../scripts.html#scripts.helper.BehaviorHelper.recharge">[docs]</a>    <span class="k">def</span> <span class="nf">recharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to recharge the battery. The robot checks the reachable locations: if room E can be reached, then the robot goes there;</span>
+<span class="sd">        if room E is not in the reachable locations, then choose randomly in which location to go next and repeat until room E is reachable.</span>
+<span class="sd">        </span>
+<span class="sd">        Args: </span>
+<span class="sd">            position(Str): current position of the robot, which whill be updated with location &#39;E&#39;</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;I need to recharge, going to room &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">recharging_room</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">position</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">recharging_room</span><span class="p">:</span>
+            <span class="n">reached</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reached</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">while</span><span class="p">(</span><span class="n">reached</span> <span class="o">==</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">reachable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queried</span><span class="p">(</span><span class="s1">&#39;reachable&#39;</span><span class="p">)</span>
+            <span class="c1"># If room E is reachable, go there</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recharging_room</span> <span class="ow">in</span> <span class="n">reachable</span><span class="p">:</span>
+                <span class="n">reached</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1"># Else choose randomly and repeat</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reachable</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">choice</span> <span class="o">=</span> <span class="n">reachable</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">choice</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">reachable</span><span class="p">)</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">replace_objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;isIn&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">choice</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">apply_buffered_changes</span><span class="p">()</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sync_buffered_reasoner</span><span class="p">()</span>
+                <span class="c1"># Update the current position</span>
+                <span class="n">position</span> <span class="o">=</span> <span class="n">choice</span>       
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Almost there...I am in location &#39;</span> <span class="o">+</span> <span class="n">position</span> <span class="o">+</span> <span class="s1">&#39; now&#39;</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">BUSY_TIME</span><span class="p">)</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">replace_objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;isIn&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recharging_room</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>       
+        <span class="n">client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">apply_buffered_changes</span><span class="p">()</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sync_buffered_reasoner</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Sara Sgambato.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

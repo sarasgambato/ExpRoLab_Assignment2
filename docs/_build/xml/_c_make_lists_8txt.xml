@@ -237,6 +237,6 @@
 <codeline lineno="228"><highlight class="normal"></highlight><highlight class="preprocessor">##<sp/>Add<sp/>folders<sp/>to<sp/>be<sp/>run<sp/>by<sp/>python<sp/>nosetests</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="229"><highlight class="normal"></highlight><highlight class="preprocessor">#<sp/>catkin_add_nosetests(test)</highlight></codeline>
     </programlisting>
-    <location file="CMakeLists.txt"/>
+    <location file="/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/CMakeLists.txt"/>
   </compounddef>
 </doxygen>

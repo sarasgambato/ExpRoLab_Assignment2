@@ -1,14 +1,33 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.8.17">
-  <compound refid="namespacesetup" kind="namespace"><name>setup</name>
-    <member refid="setup_8py_1a504ffa482edfe0eff08f64b2f5dff0e9" kind="variable"><name>setup_args</name></member>
+  <compound refid="class_detect_aruco" kind="class"><name>DetectAruco</name>
+    <member refid="class_detect_aruco_1a39b9799135fd1370949d49ccd97c1068" kind="variable"><name>nh</name></member>
+    <member refid="class_detect_aruco_1a1bdcbff2983f1c36684b8ca50b36fd4c" kind="variable"><name>joint01_pub</name></member>
+    <member refid="class_detect_aruco_1ac60d35ee13222f3dc1288c4f83d01f4b" kind="variable"><name>joint02_pub</name></member>
+    <member refid="class_detect_aruco_1a56aad7577f948a09c59f714c13435934" kind="variable"><name>joint03_pub</name></member>
+    <member refid="class_detect_aruco_1ae761ff8233e893b4f163ac115212a1de" kind="variable"><name>camera_sub</name></member>
+    <member refid="class_detect_aruco_1a0c53d3004e10db49516079cb440d8c61" kind="variable"><name>mDetector</name></member>
+    <member refid="class_detect_aruco_1ac2070f0569ceb7354f43920a46346603" kind="variable"><name>markers</name></member>
+    <member refid="class_detect_aruco_1a535d5945f41a266222a929f9f2a7cf9f" kind="variable"><name>floor_markers</name></member>
+    <member refid="class_detect_aruco_1a3b4906303751f204bbc32ffc6ef1ce7d" kind="variable"><name>ceil_markers</name></member>
+    <member refid="class_detect_aruco_1ad1ca106dbe674d4f5f61ace75d67035c" kind="variable"><name>markerSize</name></member>
+    <member refid="class_detect_aruco_1acc2caeec414f462401cc57d930668f10" kind="variable"><name>msg</name></member>
+    <member refid="class_detect_aruco_1ab0a44c534a0250002d9a4a27922b093f" kind="variable"><name>IDList</name></member>
+    <member refid="class_detect_aruco_1a354268cd82f349439774e5c025a9a189" kind="variable"><name>markerID</name></member>
+    <member refid="class_detect_aruco_1adc0fda17c72acd5ea3f794c836acce2d" kind="variable"><name>ID_pub</name></member>
+    <member refid="class_detect_aruco_1aa7289f7a992fc1d5725ed902d732b909" kind="variable"><name>current_pose</name></member>
+    <member refid="class_detect_aruco_1ae8cc6ad4b5d55a4c8dd77560b8ebfc0b" kind="function"><name>DetectAruco</name></member>
+    <member refid="class_detect_aruco_1aa5b90097c9ae2b2f7203ed14b7399cd2" kind="function"><name>CameraCallback</name></member>
+    <member refid="class_detect_aruco_1a0bbff1b9155521a56890b4e642a57990" kind="function"><name>MoveArm</name></member>
+    <member refid="class_detect_aruco_1aaaa75855c144db1612cc272c5036755f" kind="function"><name>FinishDetection</name></member>
   </compound>
-  <compound refid="_c_make_lists_8txt" kind="file"><name>CMakeLists.txt</name>
+  <compound refid="detect__marker_8cpp" kind="file"><name>detect_marker.cpp</name>
+    <member refid="detect__marker_8cpp_1a3c04138a5bfe5d72780bb7e82a18e627" kind="function"><name>main</name></member>
   </compound>
-  <compound refid="_r_e_a_d_m_e_8md" kind="file"><name>README.md</name>
+  <compound refid="marker__server_8cpp" kind="file"><name>marker_server.cpp</name>
+    <member refid="marker__server_8cpp_1afbe27b73e1c73991343e3427daa88848" kind="function"><name>markerCallback</name></member>
+    <member refid="marker__server_8cpp_1a3c04138a5bfe5d72780bb7e82a18e627" kind="function"><name>main</name></member>
   </compound>
-  <compound refid="setup_8py" kind="file"><name>setup.py</name>
-  </compound>
-  <compound refid="md__r_e_a_d_m_e" kind="page"><name>md_README</name>
+  <compound refid="dir_68267d1309a1af8e8297ef4c3efbcdba" kind="dir"><name>/home/sara/Desktop/Exp/exp_ws/src/ExpRoLab_Assignment2/src</name>
   </compound>
 </doxygenindex>
