@@ -6,18 +6,36 @@ In the second assignment of the Experimental Robotics Laboratory course, we were
 
 We were provided with [this package](https://github.com/CarmineD8/assignment2) and our requirements were:
 - to add a robot in the environment and to spawn it in the initial the position x = -6.0, y = 11.0;
-- to the "semantic" map of the environment by detecting, without moving the base of the robot, all seven AruCo markers that were present around it, by calling the provided service node;
+- to the "semantic" map of the environment by detecting, without moving the base of the robot, all seven [AruCo markers](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html) that were present around it, by calling the provided service node;
 - to start the patrolling algorithm by relying on autonomous navigation strategies and on the information collected and stored in the ontology during the previous step;
 - to perform a complete scan of the room (by rotating the base or the camera) when a room was reached.
 
 ## Software architecture
 The user can find a detailed description of the software architecture that was used [here](https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#software-architecture).
 
-However, some changes were done:
-- The `planner` and the `controller` nodes were removed, due to the fact that the robot is now controlled via [move_base](http://wiki.ros.org/move_base). In fact, in the state relative to checking the target, a goal with the coordinates of the room that the robot has to reach is sent to the move_base action client.
-- The ontology is not loaded anymore through a function prompting the user:
-  1 the robot moves its arm through the `detect_marker` node, which publishes the list of detected marker on the topic `id_list`. The state machine is blocked until the IDs are published;
-  2 once the IDs are published, in the first state of the state machine the ontology is built through a server. The server is implemented in the [load_ontology.py](https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/scripts/load_ontology.py) script, which takes as request one ID, gets the information about that ID through the [marker server](https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/src/marker_server.cpp), and manipulates the ontology. 
+However, some changes were done.
+
+### The `detect_marker` node
+This node is responsible of moving the robot's arm, on the top of which there is a camera, in order to detect the markers around itself: the node subscribes to the topic in which the camera publishes the image data, and an ArUco detector process the image to check if there were some markers every time a new message is received . The ID of the detected markers are stored in a list and published in the topic `id_list` as a message of type `std_msgs/Int32MultiArray`.
+
+### The `marker_server` node
+This node implements a server:
+- **request**: ID of a marker
+- **response**: information about a room (its coordinates, the other rooms it is connected to, the doors that connect these rooms)
+
+Based on the request that the server receives, different information is sent back to client.
+
+### The `load_ontology` node
+The script [load_ontology.py](https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/scripts/load_ontology.py) has been modified in order to implement a server:
+- **request**: ID of a marker
+- **responsee**: room name and its (x,y) coordinates
+
+Every time the node receives a new request, it gathers information about the ontology through the `marker_server`, manipulates the ontology with the new information, and then it sends back to the client the new information received.
+
+### Other changes
+1. The `behavior` node, the one implementing the Finite State Machine (FSM), builds the ontology by waiting for the `detect_marker` node to publish the list of IDs, then it sends one ID at a time to the `load_ontology` node, and in the end it stores all the information received by the last mentioned node for further use in the FSM.
+2. Every time the FSM has reasoned about which location to reach, the coordinate of the location are sent as a goal to the [move_base](http://wiki.ros.org/move_base) Action Client, which computes a path to the given point based on the knowledge of the map, which is updated every time the robot moves in the environment through [gmapping](http://wiki.ros.org/gmapping).
+3. The `planner` and `controller` nodes, which simply simulated the planning of a path and the control of the robot, have been removed from the overall architecture, given that now all of this is done through `move_base`.
 
 ## Installation & running
 ### Installation
@@ -42,16 +60,21 @@ roslaunch ExpRoLab_Assignment2 assignment.launch
 ```
 
 ## System's features
-### Environment
+### Environment & Robot
 The enviornment used for the assignment is the one shown in the following figure. Some of the markers can be seen (there are 7 markers in total), plus the robot in its initial position.
 <p align="center">
 <img src="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/environment.png" width=70%, height=70%>
 </p>
+The user can notice that the robot is very simple, with:
+* a chassis with two wheels and a caster;
+* a laser attached to the chassis to perform collision avoidance and to build the map through gmapping;
+* an arm with three links and a camera on top of it to detect the AruCo markers.
+
 
 ### Limitations and future technical improvement
-The detection of the markers is thought only for this particular environment, so if the user were to use `marker_detect.cpp` for another environment, it would not work. Therefore, a possible improvement could be to implement a solution that is as general as possible, in order to use it with whatever environment we have at hand.
+The detection of the markers is not extensively general, so if the user were to use `detect_marker.cpp` for an environment in which markers were placed differently, it would work badly. Therefore, a possible improvement could be to implement a solution that is as general as possible, in order to use it with whatever environment we want to navgate through.
 
-Another limitation is the robot itself, given that the author opted for a very easy solution. A possible improvement could be to buil a more sophisticated robot or tu use the URDF of a commercial robot.
+Another limitation is the robot itself, given that the author opted for a very easy solution. A possible improvement could be to build a robot with four wheels.
 
 ## Authors & Contacts
 [Sara Sgambato](https://github.com/sarasgambato)
