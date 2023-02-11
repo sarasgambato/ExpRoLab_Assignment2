@@ -14,11 +14,10 @@ We were provided with [this package](https://github.com/CarmineD8/assignment2) a
 The user can find a detailed description of the software architecture that was used [here](https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#software-architecture).
 
 However, some changes were done:
-- The author did some changes in the `planner` and `controller` nodes by author [Luca Buoncompagni](https://github.com/buoncubi)
-  - in the `planner` the via points that are calculated are taken from the linspace between the start position of the robot (the first via point) and the target position (the last via point);
-  - in the `controller` node the robot is ctually controlled through the `move_base` simple action client in order to reach the last via point, which is the target.
-
-the goal that is sent to the `planner` is the actual room the the robot is required to reach 
+- The `planner` and the `controller` nodes were removed, due to the fact that the robot is now controlled via [move_base](http://wiki.ros.org/move_base). In fact, in the state relative to checking the target, a goal with the coordinates of the room that the robot has to reach is sent to the move_base action client.
+- The ontology is not loaded anymore through a function prompting the user:
+  1 the robot moves its arm through the `detect_marker` node, which publishes the list of detected marker on the topic `id_list`. The state machine is blocked until the IDs are published;
+  2 once the IDs are published, in the first state of the state machine the ontology is built through a server. The server is implemented in the [load_ontology.py](https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/scripts/load_ontology.py) script, which takes as request one ID, gets the information about that ID through the [marker server](https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/src/marker_server.cpp), and manipulates the ontology. 
 
 ## Installation & running
 ### Installation
