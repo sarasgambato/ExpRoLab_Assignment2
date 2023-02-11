@@ -18,14 +18,16 @@ Servers:
 """
 
 import rospy
+import actionlib
 import random
 import smach_ros
 from smach import StateMachine, State
 from load_ontology import LoadMap
 from ExpRoLab_Assignment2 import architecture_name_mapper as anm
 from helper import InterfaceHelper, BehaviorHelper
-from arch_skeleton.msg import Point, ControlGoal, PlanGoal
+from ExpRoLab_Assignment2.msg import Point, ControlGoal, PlanGoal
 from ExpRoLab_Assignment2.srv import LoadMap
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from os.path import dirname, realpath
 
 # list of states in the machine
@@ -54,7 +56,7 @@ class LoadOntology(State):
 
     def __init__(self, helper):
         State.__init__(self, outcomes=[TRANS_INITIALIZED],
-                       output_keys=['rooms'])
+                       output_keys=['rooms', 'recharge_room'])
         self._helper = helper
         # Usefull variables
         self.rooms = {}
@@ -92,6 +94,9 @@ class LoadOntology(State):
 
         print("Map successfully initialized.")
         userdata.rooms = self.rooms
+        recharge_room = Point(x = self.rooms["E"].get("x"),
+                              y = self.rooms["E"].get("y"))
+        userdata.recharge_room = recharge_room
 
         return TRANS_INITIALIZED
 
@@ -101,7 +106,8 @@ class Recharging(State):
     """
 
     def __init__(self, helper):
-        State.__init__(self, outcomes=[TRANS_RECHARGED])
+        State.__init__(self, outcomes=[TRANS_RECHARGED],
+                        input_keys=['recharge_room'])
         self._helper = helper
 
     def execute(self, userdata):
@@ -116,10 +122,20 @@ class Recharging(State):
             Str: 'recharged' once the battery is recharged
         """
 
+        recharge_room = userdata.recharge_room
+        goal = MoveBaseGoal()
+        goal.target_pose.pose.position.x = recharge_room.x
+        goal.target_pose.pose.position.y = recharge_room.y
+        goal.target_pose.pose.orientation.w = 1
+        goal.target_pose.header.frame_id = "map"
+        goal.target_pose.header.stamp = rospy.Time.now()
+        # Send the goal to the move_base client
+        self._helper.move_base_client.send_goal(goal)
+
         while not rospy.is_shutdown():
             self._helper.mutex.acquire()
             try:
-                if not self._helper.is_battery_low():
+                if not self._helper.is_battery_low() and self._helper.move_base_client.is_done():
                     self._helper.reset_states()
                     return TRANS_RECHARGED
             finally:
@@ -136,7 +152,7 @@ class DecideTarget(State):
         self._sm_helper = sm_helper
         State.__init__(self, outcomes=[TRANS_DECIDED, TRANS_RECHARGING], 
                        input_keys=['rooms'],
-                       output_keys=['current_pose', 'choice', 'path_plan'])
+                       output_keys=['current_pose', 'choice'])
 
     def execute(self, userdata):
         """
@@ -149,26 +165,19 @@ class DecideTarget(State):
         Returns:
             Str: 'recharging' if the battery is low, 'target_acquired' otherwise
         """
-        goal = PlanGoal()
+        
         current_pose, choice = self._sm_helper.decide_location()
-        rooms = userdata.rooms
-        # Get the coordinates of the decided location
-        goal.target.x = rooms[choice].get("x")
-        goal.target.y = rooms[choice].get("y")
-        self._helper.planner_client.send_goal(goal)
 
         while not rospy.is_shutdown():
             self._helper.mutex.acquire()
             try:
                 if self._helper.is_battery_low(): #higher priority
-                    self._helper.planner_client.cancel_goals()
                     self._sm_helper.recharge(current_pose)
                     return TRANS_RECHARGING
                 
-                if self._helper.planner_client.is_done():
+                else:
                     userdata.choice = choice
                     userdata.current_pose = current_pose
-                    userdata.path_plan = self._helper.planner_client.get_results().via_points
                     return TRANS_DECIDED
 
             finally:
@@ -184,7 +193,7 @@ class CheckTarget(State):
         self._helper = helper
         self._sm_helper = sm_helper
         State.__init__(self, outcomes=[TRANS_WENT_TARGET, TRANS_RECHARGING], 
-                       input_keys=['current_pose', 'choice', 'path_plan'])
+                       input_keys=['current_pose', 'choice', 'rooms'])
 
     def execute(self, userdata):
         """
@@ -198,24 +207,32 @@ class CheckTarget(State):
             Str: 'recharging' if the battery is low, 'went_target' otherwise
         """
 
-        # send the goal to the controller and check that the via points are reached
-        plan = userdata.path_plan
+        # send the goal to the controller by sending only the last point of the target
+        rooms = userdata.rooms
         current_pose = userdata.current_pose
-        goal = ControlGoal(via_points=plan)
-        self._helper.controller_client.send_goal(goal)
+        choice = userdata.choice
+        # Get the coordinates of the decided location
+        goal = MoveBaseGoal()
+        goal.target_pose.pose.position.x = rooms[choice].get("x")
+        goal.target_pose.pose.position.y = rooms[choice].get("y")
+        goal.target_pose.pose.orientation.w = 1
+        goal.target_pose.header.frame_id = "map"
+        goal.target_pose.header.stamp = rospy.Time.now()
+        # Send the goal to the move_base client
+        self._helper.move_base_client.send_goal(goal)
 
         while not rospy.is_shutdown():
             self._helper.mutex.acquire()
             try:
                 if self._helper.is_battery_low():
-                    self._helper.controller_client.cancel_goals()
+                    self._helper.move_base_client.cancel_goals()
                     self._sm_helper.recharge(current_pose)
                     return TRANS_RECHARGING
                     
-                if self._helper.controller_client.is_done():
-                    choice = userdata.choice
+                if self._helper.move_base_client.is_done():
                     self._sm_helper.check_location(current_pose, choice)
                     return TRANS_WENT_TARGET
+
             finally:
                 self._helper.mutex.release()
             rospy.sleep(SLEEP_TIME)
@@ -242,7 +259,7 @@ def main():
                         transitions={TRANS_INITIALIZED: STATE_NORMAL})
 
         # Inner fsm
-        sm_normal = StateMachine(outcomes=[TRANS_BATTERY_LOW], input_keys = ['rooms'])
+        sm_normal = StateMachine(outcomes=[TRANS_BATTERY_LOW], input_keys = ['rooms', 'recharge_room'])
         with sm_normal:
             # Decision state
             StateMachine.add(STATE_DECISION, DecideTarget(helper, sm_helper),

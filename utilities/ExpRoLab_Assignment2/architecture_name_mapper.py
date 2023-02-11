@@ -26,6 +26,9 @@ SERVER_GET_POSE = 'state/get_pose'
 # The name of the server to set the current robot pose. 
 SERVER_SET_POSE = 'state/set_pose'
 
+# The name of the client to control the robot
+CLIENT_MOVE_BASE = 'move_base'
+
 # The name of the topic where the battery state is published.
 TOPIC_BATTERY_LOW = 'state/battery_low'
 
@@ -41,38 +44,8 @@ BUSY_TIME = 5
 SLEEP_TIME = 0.3
 
 # Parameter indicating the battery time [s]
-BATTERY_TIME = 120
+BATTERY_TIME = 1800
 # ---------------------------------------------------------
-
-
-# The name of the planner node.
-NODE_PLANNER = 'planner'
-
-# The name of the action server solving the motion planning problem.
-ACTION_PLANNER = 'motion/planner'
-
-# The number of points in the plan. It should be a list [min_n, max_n],
-# Where the number of points is a random value in the interval [min_n, max_n).
-PARAM_PLANNER_POINTS = 'test/random_plan_points'
-
-# The delay between the computation of the next via points.
-# It should be a list `[min_time, max_time]`, and the computation will 
-# last for a random number of seconds in such an interval.
-PARAM_PLANNER_TIME = 'test/random_plan_time'
-# -------------------------------------------------
-
-
-# The name of the controller node.
-NODE_CONTROLLER = 'controller'
-
-# The name of the action server solving the motion control problem.
-ACTION_CONTROLLER = 'motion/controller'
-
-# The time required to reach a via points.
-# It should be a list `[min_time, max_time]`, and the time to reach a
-# via point will be a random number of seconds in such an interval.
-PARAM_CONTROLLER_TIME = 'test/random_motion_time'
-# -------------------------------------------------
 
 
 def tag_log(msg, producer_tag):

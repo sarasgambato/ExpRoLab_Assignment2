@@ -13,7 +13,6 @@
 * Description :
 * This node is a server which generates a response based on the request it receives. The request changes based 
 * on the ArUco marker that the robot detects, and the response corresponds to a room with all its connections.
-*
 */
 
 #include <ros/ros.h>
@@ -23,14 +22,13 @@
 /**
 * \brief Callback function.
 *
-* \param req is the request from the client, containing the marker id
-* \param res is the response of the server, which will be information about some room
+* \param req request from the client, the marker's ID
+* \param res response of the server, information about a room
 
 * \return true
 *
-* This callback function gets the request from the client and checks its id. Each id corresponds to a different marker,
-* which has different information. The response of the server contains the room that has been detected, its position and
-* all the corridors the room is connected to through the doors.
+* In this callback function each ID corresponds to a different room. Each time the server receives a request, it gest the ID and sends back
+* the response with the room, its connections, and the doors connecting the room to the connections.
 */
 bool markerCallback(ExpRoLab_Assignment2::RoomInformation::Request &req, ExpRoLab_Assignment2::RoomInformation::Response &res)
 {
@@ -121,6 +119,11 @@ bool markerCallback(ExpRoLab_Assignment2::RoomInformation::Request &req, ExpRoLa
 
 /**
 * \brief Main function.
+*
+* \param argc number of command line arguments
+* \param argv array of command line arguments
+*
+* \return 0 if success, non-zero otherwise
 */
 int main(int argc, char **argv)
 {

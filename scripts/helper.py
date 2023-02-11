@@ -30,8 +30,8 @@ from threading import Lock
 from armor_api.armor_client import ArmorClient
 from ExpRoLab_Assignment2 import architecture_name_mapper as anm
 from std_msgs.msg import Bool, Int32MultiArray, Float64
-from arch_skeleton.msg import PlanAction, ControlAction
 from ExpRoLab_Assignment2.srv import SetPose
+from move_base_msgs.msg import MoveBaseAction
 
 client = ArmorClient("armor_client", "my_ontology")
 
@@ -206,6 +206,7 @@ class ActionClientHelper:
             print("Error: cannot get result")
             return None
 
+
 class InterfaceHelper:
     """
     Class that manages the synchronization with subscribers and action servers.
@@ -219,11 +220,9 @@ class InterfaceHelper:
         # Define the callback associated with the battery low ROS subscribers
         rospy.Subscriber(anm.TOPIC_BATTERY_LOW, Bool, self.battery_callback_)
         # Define the callback associated with the marker ID ROS subscribers
-        rospy.Subscriber("/id_list", Int32MultiArray, self.list_callback_)
+        rospy.Subscriber(anm.TOPIC_MARKER_LIST, Int32MultiArray, self.list_callback_)
         # Define the clients for the the plan and control action servers
-        self.planner_client = ActionClientHelper(anm.ACTION_PLANNER, PlanAction, mutex=self.mutex)
-        self.controller_client = ActionClientHelper(anm.ACTION_CONTROLLER, ControlAction, mutex=self.mutex)
-
+        self.move_base_client = ActionClientHelper(anm.CLIENT_MOVE_BASE, MoveBaseAction, mutex=self.mutex)
         # Variable to store the markers' ID
         self._marker_list = []
 
@@ -263,7 +262,7 @@ class InterfaceHelper:
 
     def list_callback_(self, msg):
         """
-        Function for the subscriber to get messages published from the `detect_marker` node into the `/list_topic` topic.
+        Callback of the subscriber to get messages published from the `detect_marker` node into the `/id_list` topic.
         
         Args:
             msg(List): list of found markers
@@ -495,24 +494,32 @@ class BehaviorHelper:
         if target not in corridors: # the 'visitedAt' property of the corridors has not been considered, given that they will never be urgent
             last_visit = self.get_timestamp('visitedAt', target)
             client.manipulation.replace_dataprop_b2_ind('visitedAt', target, 'Long', now, last_visit)
-        # Check the room by rotating the camera of approximately 360 degrees
+        # Check the room
+        self.look_around()        
+        print('Reached target...mmh...everything clear')
+        client.utils.apply_buffered_changes()
+        client.utils.sync_buffered_reasoner() 
+
+    def look_around(self):
+        """
+        Function to check the location that the robot is into.
+        
+        Args:
+            None
+            
+        Returns:
+            None
+        """
+
         cam_pose = 0
         msg = Float64()
-        print("here1")
-        while (cam_pose != 3):
-            print("here2")
+        while (cam_pose != 6):
             cam_pose = cam_pose + 0.5
-            print("here3")
             msg.data = cam_pose
-            print("here4")
             self.joint01_pub.publish(msg)
-            print("here5")
             rospy.sleep(0.2)
         msg.data = 0
         self.joint01_pub.publish(msg)
-        print('Reached target...mmh...everything clear')
-        client.utils.apply_buffered_changes()
-        client.utils.sync_buffered_reasoner()      
 
     def recharge(self, position):
         """
@@ -552,4 +559,3 @@ class BehaviorHelper:
         client.manipulation.replace_objectprop_b2_ind('isIn', self.robot, self.recharging_room, position)       
         client.utils.apply_buffered_changes()
         client.utils.sync_buffered_reasoner()
-        print('Reached room ' +  self.recharging_room + ', recharging...')

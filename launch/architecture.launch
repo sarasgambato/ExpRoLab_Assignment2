@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- Run the armor_service node -->
+        <node name = "armor_service" 
+            pkg="armor" 
+            type = "execute" 
+            args="it.emarolab.armor.ARMORMainService"/>
+
+        <!-- Run the architecture's component. -->
+        <rosparam param="state/initial_pose"> [0.0, 0.0] </rosparam>
+
+        <node pkg = "ExpRoLab_Assignment2"  
+            type = "behavior.py"      
+            name = "behavior" 
+            output = "screen"
+            launch-prefix="xterm -fa 'Monospace' -fs 10 -e"/>
+
+        <node pkg = "ExpRoLab_Assignment2"  
+            type = "robot_states.py" 
+            name = "robot_state"/>
+
+</launch>
