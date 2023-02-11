@@ -62,7 +62,7 @@
         
     <!-- Launch the server nodes -->
     <node name="marker_server" pkg="ExpRoLab_Assignment2" type="marker_server" />
-    <node name="load_map_service" pkg="ExpRoLab_Assignment2" type="load_ontology.py" output="screen" launch-prefix="xterm -fa 'Monospace' -fs 10 -e"/>
+    <node name="load_ontology" pkg="ExpRoLab_Assignment2" type="load_ontology.py" output="screen" launch-prefix="xterm -fa 'Monospace' -fs 10 -e"/>
 
     <!-- Launch the node to detect the markers -->
     <rosparam param="config/floor_markers"> 4 </rosparam>

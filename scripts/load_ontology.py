@@ -11,6 +11,9 @@ This node adds all the wanted individuals in the map and their properties and it
 
 Clients:
     :attr:`armor_client`: client to communicate with the aRMOR server in order to create the ontology.
+
+Services:
+    :attr:`load_map`: service to build the ontology
 """
 
 import rospy
@@ -22,6 +25,9 @@ from ExpRoLab_Assignment2.srv import RoomInformation, LoadMap, LoadMapResponse
 from ExpRoLab_Assignment2.msg import RoomCoordinate
 
 class LoadMapService():
+    """
+    Class to build the ontology.
+    """
 
     def __init__(self):
         # Armor stuff
@@ -41,14 +47,21 @@ class LoadMapService():
         self.room_coordinates = []
         self.room_coordinates = RoomCoordinate()
         self.individuals = []
-        self.locations = []
 
     def handle_load_map(self, request):
-        # handle the request and load the map
+        """
+        Function that is called every time the server /load_map receives a request. It gathers information about one room thorugh the
+        service /room_info and then manipulates the ontology with the received information.
+        
+        Args:
+            request(Int): ID of a marker
+            
+        Returns:
+            response(RoomCoordinate)
+        """
 
         # wait for the server to be available
         rospy.wait_for_service("/room_info")
-        print(request)
        
         try:
             # send a request to the server to get info about the ID
@@ -93,7 +106,7 @@ class LoadMapService():
 if __name__== '__main__':
 
     # Initialize the ROS node
-    rospy.init_node('load_map_service')
+    rospy.init_node('load_ontology')
 
     # Initialize the LoadMapService class
     load_map = LoadMapService()

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.behavior &mdash; ExpRoLab_Assignment2 v.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> ExpRoLab_Assignment2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../src.html">src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts.html">scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ExpRoLab_Assignment2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scripts.behavior</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scripts.behavior</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3 </span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: behavior</span>
+<span class="sd">    :platform: ROS</span>
+<span class="sd">    :synopsis: Python module for the initialization and definition of the finite state machine.</span>
+<span class="sd">    </span>
+<span class="sd">.. moduleauthor:: Sara Sgambato s4648592@studenti.unige.it</span>
+
+<span class="sd">This module defines the behavior of the Finite State Machine. It has two states and one inner FSM:</span>
+
+<span class="sd">* Initialization state: the ontology is created;</span>
+<span class="sd">* Recharging state: the robot goes to recharge;</span>
+<span class="sd">* Normal: inner FSM with two states, Decision state and Checking state, to decide what location to visit next and to check it.</span>
+
+<span class="sd">Servers:</span>
+<span class="sd">    :attr:`fsm_server`: introspection server of SMACH, necessary for the developer to visualize the state machine</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">smach_ros</span>
+<span class="kn">from</span> <span class="nn">smach</span> <span class="kn">import</span> <span class="n">StateMachine</span><span class="p">,</span> <span class="n">State</span>
+<span class="kn">from</span> <span class="nn">load_ontology</span> <span class="kn">import</span> <span class="n">LoadMap</span>
+<span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2</span> <span class="kn">import</span> <span class="n">architecture_name_mapper</span> <span class="k">as</span> <span class="n">anm</span>
+<span class="kn">from</span> <span class="nn">helper</span> <span class="kn">import</span> <span class="n">InterfaceHelper</span><span class="p">,</span> <span class="n">BehaviorHelper</span>
+<span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2.msg</span> <span class="kn">import</span> <span class="n">Point</span>
+<span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2.srv</span> <span class="kn">import</span> <span class="n">LoadMap</span>
+<span class="kn">from</span> <span class="nn">move_base_msgs.msg</span> <span class="kn">import</span> <span class="n">MoveBaseGoal</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">realpath</span>
+
+<span class="c1"># list of states in the machine</span>
+<span class="n">STATE_INIT</span> <span class="o">=</span> <span class="s1">&#39;INITIALIZE_MAP&#39;</span>
+<span class="n">STATE_DECISION</span> <span class="o">=</span> <span class="s1">&#39;DECIDE_LOCATION&#39;</span>
+<span class="n">STATE_PLAN_TARGET</span> <span class="o">=</span> <span class="s1">&#39;PLAN_TO_TARGET&#39;</span>
+<span class="n">STATE_CHECK_TARGET</span> <span class="o">=</span> <span class="s1">&#39;CHECK_TARGET&#39;</span>
+<span class="n">STATE_NORMAL</span> <span class="o">=</span> <span class="s1">&#39;NORMAL&#39;</span>
+<span class="n">STATE_RECHARGING</span> <span class="o">=</span> <span class="s1">&#39;RECHARGING&#39;</span>
+
+<span class="c1"># list of transition states</span>
+<span class="n">TRANS_INITIALIZED</span> <span class="o">=</span> <span class="s1">&#39;everything_loaded&#39;</span>
+<span class="n">TRANS_DECIDED</span> <span class="o">=</span> <span class="s1">&#39;target_acquired&#39;</span>
+<span class="n">TRANS_BATTERY_LOW</span> <span class="o">=</span> <span class="s1">&#39;battery_low&#39;</span>
+<span class="n">TRANS_RECHARGING</span> <span class="o">=</span> <span class="s1">&#39;recharging&#39;</span>
+<span class="n">TRANS_RECHARGED</span> <span class="o">=</span> <span class="s1">&#39;recharged&#39;</span>
+<span class="n">TRANS_WENT_TARGET</span> <span class="o">=</span> <span class="s1">&#39;went_target&#39;</span>
+
+<span class="c1"># Sleeping time of the waiting thread</span>
+<span class="n">SLEEP_TIME</span> <span class="o">=</span> <span class="n">anm</span><span class="o">.</span><span class="n">SLEEP_TIME</span>
+
+<div class="viewcode-block" id="LoadOntology"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.LoadOntology">[docs]</a><span class="k">class</span> <span class="nc">LoadOntology</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class related to the state that loads the ontology.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">helper</span><span class="p">):</span>
+        <span class="n">State</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="n">TRANS_INITIALIZED</span><span class="p">],</span>
+                       <span class="n">output_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;rooms&#39;</span><span class="p">,</span> <span class="s1">&#39;recharge_room&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">helper</span>
+        <span class="c1"># Usefull variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rooms</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="LoadOntology.execute"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.LoadOntology.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function that is executed when entering the INITIALIZE_MAP state of the fsm. </span>
+<span class="sd">        It calls the detecter of the markers and waits for the map to be built, then it transitions to the state NORMAL.</span>
+
+<span class="sd">        Args: </span>
+<span class="sd">            userdata: not used</span>
+
+<span class="sd">        Returns: </span>
+<span class="sd">            Str: &#39;everything_loaded&#39; once the map has been intialized</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">_marker_list</span><span class="p">:</span>
+            <span class="k">pass</span>
+        
+        <span class="c1"># Connect to the /load_map service to build the ontology</span>
+        <span class="n">load_map_client</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="s2">&quot;/load_map&quot;</span><span class="p">,</span> <span class="n">LoadMap</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">_marker_list</span><span class="p">)):</span>
+            <span class="c1"># Wait for the service to become available</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span><span class="s2">&quot;/load_map&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Call the load_map service</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">load_map_client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">_marker_list</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rooms</span><span class="p">[</span><span class="n">res</span><span class="o">.</span><span class="n">coordinate</span><span class="o">.</span><span class="n">room</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">coordinate</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">coordinate</span><span class="o">.</span><span class="n">y</span><span class="p">}</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Added location &quot;</span> <span class="o">+</span> <span class="n">res</span><span class="o">.</span><span class="n">coordinate</span><span class="o">.</span><span class="n">room</span> <span class="o">+</span> 
+                      <span class="s2">&quot; with coordinates (&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">coordinate</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">coordinate</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+                
+            <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Service call failed: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Map successfully initialized.&quot;</span><span class="p">)</span>
+        <span class="n">userdata</span><span class="o">.</span><span class="n">rooms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rooms</span>
+        <span class="n">recharge_room</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rooms</span><span class="p">[</span><span class="s2">&quot;E&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">),</span>
+                              <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rooms</span><span class="p">[</span><span class="s2">&quot;E&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">))</span>
+        <span class="n">userdata</span><span class="o">.</span><span class="n">recharge_room</span> <span class="o">=</span> <span class="n">recharge_room</span>
+
+        <span class="k">return</span> <span class="n">TRANS_INITIALIZED</span></div></div>
+
+<div class="viewcode-block" id="Recharging"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.Recharging">[docs]</a><span class="k">class</span> <span class="nc">Recharging</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class related to the state that recharges the robot&#39;s battery.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">helper</span><span class="p">):</span>
+        <span class="n">State</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="n">TRANS_RECHARGED</span><span class="p">],</span>
+                        <span class="n">input_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;recharge_room&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">helper</span>
+
+<div class="viewcode-block" id="Recharging.execute"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.Recharging.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function that is executed every time the fsm enters the RECHARGING state.</span>
+<span class="sd">        It recharges the battery of the robot and transitions to the state NORMAL.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            userdata: not used</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Str: &#39;recharged&#39; once the battery is recharged</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">recharge_room</span> <span class="o">=</span> <span class="n">userdata</span><span class="o">.</span><span class="n">recharge_room</span>
+        <span class="n">goal</span> <span class="o">=</span> <span class="n">MoveBaseGoal</span><span class="p">()</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">recharge_room</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">recharge_room</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="s2">&quot;map&quot;</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">stamp</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="c1"># Send the goal to the move_base client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">move_base_client</span><span class="o">.</span><span class="n">send_goal</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">is_battery_low</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">move_base_client</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="n">TRANS_RECHARGED</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_TIME</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="DecideTarget"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.DecideTarget">[docs]</a><span class="k">class</span> <span class="nc">DecideTarget</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class related to the state that reasons about the next location that the robot will check.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">helper</span><span class="p">,</span> <span class="n">sm_helper</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">helper</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sm_helper</span> <span class="o">=</span> <span class="n">sm_helper</span>
+        <span class="n">State</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="n">TRANS_DECIDED</span><span class="p">,</span> <span class="n">TRANS_RECHARGING</span><span class="p">],</span> 
+                       <span class="n">input_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;rooms&#39;</span><span class="p">],</span>
+                       <span class="n">output_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;current_pose&#39;</span><span class="p">,</span> <span class="s1">&#39;choice&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="DecideTarget.execute"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.DecideTarget.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function that is executed every time the fsm enters the DECIDE_LOCATION state.</span>
+<span class="sd">        It decides in which location to go next based on some criteria.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            userdata: used to pass data between states of the FSM</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Str: &#39;recharging&#39; if the battery is low, &#39;target_acquired&#39; otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">current_pose</span><span class="p">,</span> <span class="n">choice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sm_helper</span><span class="o">.</span><span class="n">decide_location</span><span class="p">()</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">is_battery_low</span><span class="p">():</span> <span class="c1">#higher priority</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_sm_helper</span><span class="o">.</span><span class="n">recharge</span><span class="p">(</span><span class="n">current_pose</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">TRANS_RECHARGING</span>
+                
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">userdata</span><span class="o">.</span><span class="n">choice</span> <span class="o">=</span> <span class="n">choice</span>
+                    <span class="n">userdata</span><span class="o">.</span><span class="n">current_pose</span> <span class="o">=</span> <span class="n">current_pose</span>
+                    <span class="k">return</span> <span class="n">TRANS_DECIDED</span>
+
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_TIME</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="CheckTarget"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.CheckTarget">[docs]</a><span class="k">class</span> <span class="nc">CheckTarget</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class related to the state that checks the location the robot is in.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">helper</span><span class="p">,</span> <span class="n">sm_helper</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">helper</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sm_helper</span> <span class="o">=</span> <span class="n">sm_helper</span>
+        <span class="n">State</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="n">TRANS_WENT_TARGET</span><span class="p">,</span> <span class="n">TRANS_RECHARGING</span><span class="p">],</span> 
+                       <span class="n">input_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;current_pose&#39;</span><span class="p">,</span> <span class="s1">&#39;choice&#39;</span><span class="p">,</span> <span class="s1">&#39;rooms&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="CheckTarget.execute"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.CheckTarget.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function that is executed every time the fsm enters the CHECK_TARGET state.</span>
+<span class="sd">        It makes the robot go to the wanted location and check it.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            userdata: used to pass data between states of the FSM</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Str: &#39;recharging&#39; if the battery is low, &#39;went_target&#39; otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># send the goal to the controller by sending only the last point of the target</span>
+        <span class="n">rooms</span> <span class="o">=</span> <span class="n">userdata</span><span class="o">.</span><span class="n">rooms</span>
+        <span class="n">current_pose</span> <span class="o">=</span> <span class="n">userdata</span><span class="o">.</span><span class="n">current_pose</span>
+        <span class="n">choice</span> <span class="o">=</span> <span class="n">userdata</span><span class="o">.</span><span class="n">choice</span>
+        <span class="c1"># Get the coordinates of the decided location</span>
+        <span class="n">goal</span> <span class="o">=</span> <span class="n">MoveBaseGoal</span><span class="p">()</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">rooms</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">rooms</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="s2">&quot;map&quot;</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">stamp</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="c1"># Send the goal to the move_base client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">move_base_client</span><span class="o">.</span><span class="n">send_goal</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">is_battery_low</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">move_base_client</span><span class="o">.</span><span class="n">cancel_goals</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_sm_helper</span><span class="o">.</span><span class="n">recharge</span><span class="p">(</span><span class="n">current_pose</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">TRANS_RECHARGING</span>
+                    
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">move_base_client</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_sm_helper</span><span class="o">.</span><span class="n">check_location</span><span class="p">(</span><span class="n">current_pose</span><span class="p">,</span> <span class="n">choice</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">TRANS_WENT_TARGET</span>
+
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_TIME</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main function which initalizes the Finite State Machine node &#39;behavior&#39;.</span>
+<span class="sd">    Two helpers are defined to help the state machine take decisions and to manage the battery.</span>
+<span class="sd">    The fsm is hierarchical as to create a more modular and robust architecture. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s1">&#39;behavior&#39;</span><span class="p">,</span> <span class="n">log_level</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="c1"># Define the helper that manages the battery stimulus</span>
+    <span class="n">helper</span> <span class="o">=</span> <span class="n">InterfaceHelper</span><span class="p">()</span>
+
+    <span class="c1"># Define the helper for the states of the fsm</span>
+    <span class="n">sm_helper</span> <span class="o">=</span> <span class="n">BehaviorHelper</span><span class="p">()</span>
+
+    <span class="n">sm_main</span> <span class="o">=</span> <span class="n">StateMachine</span><span class="p">([])</span>
+
+    <span class="k">with</span> <span class="n">sm_main</span><span class="p">:</span>
+        <span class="c1"># Initialization state</span>
+        <span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">STATE_INIT</span><span class="p">,</span> <span class="n">LoadOntology</span><span class="p">(</span><span class="n">helper</span><span class="p">),</span>
+                        <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="n">TRANS_INITIALIZED</span><span class="p">:</span> <span class="n">STATE_NORMAL</span><span class="p">})</span>
+
+        <span class="c1"># Inner fsm</span>
+        <span class="n">sm_normal</span> <span class="o">=</span> <span class="n">StateMachine</span><span class="p">(</span><span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="n">TRANS_BATTERY_LOW</span><span class="p">],</span> <span class="n">input_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rooms&#39;</span><span class="p">,</span> <span class="s1">&#39;recharge_room&#39;</span><span class="p">])</span>
+        <span class="k">with</span> <span class="n">sm_normal</span><span class="p">:</span>
+            <span class="c1"># Decision state</span>
+            <span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">STATE_DECISION</span><span class="p">,</span> <span class="n">DecideTarget</span><span class="p">(</span><span class="n">helper</span><span class="p">,</span> <span class="n">sm_helper</span><span class="p">),</span>
+                            <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="n">TRANS_DECIDED</span><span class="p">:</span> <span class="n">STATE_CHECK_TARGET</span><span class="p">,</span>
+                                        <span class="n">TRANS_RECHARGING</span><span class="p">:</span> <span class="n">TRANS_BATTERY_LOW</span><span class="p">})</span>
+            <span class="c1"># Checking state</span>
+            <span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">STATE_CHECK_TARGET</span><span class="p">,</span> <span class="n">CheckTarget</span><span class="p">(</span><span class="n">helper</span><span class="p">,</span> <span class="n">sm_helper</span><span class="p">),</span>
+                            <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="n">TRANS_WENT_TARGET</span><span class="p">:</span> <span class="n">STATE_DECISION</span><span class="p">,</span>
+                                        <span class="n">TRANS_RECHARGING</span><span class="p">:</span> <span class="n">TRANS_BATTERY_LOW</span><span class="p">})</span>
+        <span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">STATE_NORMAL</span><span class="p">,</span> <span class="n">sm_normal</span><span class="p">,</span>
+                         <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="n">TRANS_BATTERY_LOW</span><span class="p">:</span> <span class="n">STATE_RECHARGING</span><span class="p">})</span>   
+        <span class="c1"># Recharging state</span>
+        <span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">STATE_RECHARGING</span><span class="p">,</span> <span class="n">Recharging</span><span class="p">(</span><span class="n">helper</span><span class="p">),</span>
+                         <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="n">TRANS_RECHARGED</span><span class="p">:</span> <span class="n">STATE_NORMAL</span><span class="p">})</span> 
+
+    <span class="c1"># Create and start the introspection server for visualization </span>
+    <span class="n">sis</span> <span class="o">=</span> <span class="n">smach_ros</span><span class="o">.</span><span class="n">IntrospectionServer</span><span class="p">(</span><span class="s1">&#39;fsm_server&#39;</span><span class="p">,</span> <span class="n">sm_main</span><span class="p">,</span> <span class="s1">&#39;/SM_ROOT&#39;</span><span class="p">)</span>
+    <span class="n">sis</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="c1"># Execute the state machine</span>
+    <span class="n">outcome</span> <span class="o">=</span> <span class="n">sm_main</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+    <span class="c1"># Wait for ctrl-c to stop the application</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
+    <span class="n">sis</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+   
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Sara Sgambato.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

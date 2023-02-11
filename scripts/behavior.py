@@ -18,16 +18,14 @@ Servers:
 """
 
 import rospy
-import actionlib
-import random
 import smach_ros
 from smach import StateMachine, State
 from load_ontology import LoadMap
 from ExpRoLab_Assignment2 import architecture_name_mapper as anm
 from helper import InterfaceHelper, BehaviorHelper
-from ExpRoLab_Assignment2.msg import Point, ControlGoal, PlanGoal
+from ExpRoLab_Assignment2.msg import Point
 from ExpRoLab_Assignment2.srv import LoadMap
-from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from move_base_msgs.msg import MoveBaseGoal
 from os.path import dirname, realpath
 
 # list of states in the machine
@@ -76,7 +74,7 @@ class LoadOntology(State):
         while not self._helper._marker_list:
             pass
         
-        # Create a client for the load_map service
+        # Connect to the /load_map service to build the ontology
         load_map_client = rospy.ServiceProxy("/load_map", LoadMap)
 
         for i in range(0, len(self._helper._marker_list)):

@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="_r_e_a_d_m_e_8md" kind="file" language="Markdown">
+    <compoundname>README.md</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline><highlight class="normal">#<sp/>ExpRoLab<sp/>Assignment<sp/>2</highlight></codeline>
+<codeline><highlight class="normal">The<sp/>code<sp/>documentation<sp/>for<sp/>this<sp/>assignment<sp/>can<sp/>be<sp/>found<sp/>here.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">##<sp/>Introduction</highlight></codeline>
+<codeline><highlight class="normal">In<sp/>the<sp/>second<sp/>assignment<sp/>of<sp/>the<sp/>Experimental<sp/>Robotics<sp/>Laboratory<sp/>course,<sp/>we<sp/>were<sp/>requested<sp/>to<sp/>integrate<sp/>the<sp/>architecture<sp/>developed<sp/>in<sp/>the<sp/>[1st<sp/>assignment](https://github.com/sarasgambato/ExpRoLab_Assignment1)<sp/>(by<sp/>modifyig<sp/>it,<sp/>eventually)<sp/>with<sp/>a<sp/>robotic<sp/>simulation.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">We<sp/>were<sp/>provided<sp/>with<sp/>[this<sp/>package](https://github.com/CarmineD8/assignment2)<sp/>and<sp/>our<sp/>requirements<sp/>were:</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>to<sp/>add<sp/>a<sp/>robot<sp/>in<sp/>the<sp/>environment<sp/>and<sp/>to<sp/>spawn<sp/>it<sp/>in<sp/>the<sp/>initial<sp/>the<sp/>position<sp/>x<sp/>=<sp/>-6.0,<sp/>y<sp/>=<sp/>11.0;</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>to<sp/>the<sp/>&quot;semantic&quot;<sp/>map<sp/>of<sp/>the<sp/>environment<sp/>by<sp/>detecting,<sp/>without<sp/>moving<sp/>the<sp/>base<sp/>of<sp/>the<sp/>robot,<sp/>all<sp/>seven<sp/>AruCo<sp/>markers<sp/>that<sp/>were<sp/>present<sp/>around<sp/>it,<sp/>by<sp/>calling<sp/>the<sp/>provided<sp/>service<sp/>node;</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>to<sp/>start<sp/>the<sp/>patrolling<sp/>algorithm<sp/>by<sp/>relying<sp/>on<sp/>autonomous<sp/>navigation<sp/>strategies<sp/>and<sp/>on<sp/>the<sp/>information<sp/>collected<sp/>and<sp/>stored<sp/>in<sp/>the<sp/>ontology<sp/>during<sp/>the<sp/>previous<sp/>step;</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>to<sp/>perform<sp/>a<sp/>complete<sp/>scan<sp/>of<sp/>the<sp/>room<sp/>(by<sp/>rotating<sp/>the<sp/>base<sp/>or<sp/>the<sp/>camera)<sp/>when<sp/>a<sp/>room<sp/>was<sp/>reached.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">##<sp/>Software<sp/>architecture</highlight></codeline>
+<codeline><highlight class="normal">The<sp/>user<sp/>can<sp/>find<sp/>a<sp/>detailed<sp/>description<sp/>of<sp/>the<sp/>software<sp/>architecture<sp/>that<sp/>was<sp/>used<sp/>[here](https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#software-architecture).</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">However,<sp/>some<sp/>changes<sp/>were<sp/>done:</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>The<sp/>author<sp/>did<sp/>some<sp/>changes<sp/>in<sp/>the<sp/>`planner`<sp/>and<sp/>`controller`<sp/>nodes<sp/>by<sp/>author<sp/>[Luca<sp/>Buoncompagni](https://github.com/buoncubi)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>-<sp/>in<sp/>the<sp/>`planner`<sp/>the<sp/>via<sp/>points<sp/>that<sp/>are<sp/>calculated<sp/>are<sp/>taken<sp/>from<sp/>the<sp/>linspace<sp/>between<sp/>the<sp/>start<sp/>position<sp/>of<sp/>the<sp/>robot<sp/>(the<sp/>first<sp/>via<sp/>point)<sp/>and<sp/>the<sp/>target<sp/>position<sp/>(the<sp/>last<sp/>via<sp/>point);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>-<sp/>in<sp/>the<sp/>`controller`<sp/>node<sp/>the<sp/>robot<sp/>is<sp/>ctually<sp/>controlled<sp/>through<sp/>the<sp/>`move_base`<sp/>simple<sp/>action<sp/>client<sp/>in<sp/>order<sp/>to<sp/>reach<sp/>the<sp/>last<sp/>via<sp/>point,<sp/>which<sp/>is<sp/>the<sp/>target.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">the<sp/>goal<sp/>that<sp/>is<sp/>sent<sp/>to<sp/>the<sp/>`planner`<sp/>is<sp/>the<sp/>actual<sp/>room<sp/>the<sp/>the<sp/>robot<sp/>is<sp/>required<sp/>to<sp/>reach<sp/></highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">##<sp/>Installation<sp/>&amp;<sp/>running</highlight></codeline>
+<codeline><highlight class="normal">###<sp/>Installation</highlight></codeline>
+<codeline><highlight class="normal">To<sp/>correctly<sp/>use<sp/>this<sp/>software,<sp/>the<sp/>user<sp/>must<sp/>follow<sp/>these<sp/>steps<sp/>to<sp/>install<sp/>the<sp/>required<sp/>packages/repositories.</highlight></codeline>
+<codeline><highlight class="normal">1.<sp/>Given<sp/>that<sp/>the<sp/>author<sp/>decided<sp/>to<sp/>use<sp/>the<sp/>file<sp/>[topological_map.owl](https://github.com/buoncubi/topological_map/blob/main/topological_map.owl)<sp/>from<sp/>the<sp/>repository<sp/>[topological_map](https://github.com/buoncubi/topological_map)<sp/>(by<sp/>author<sp/>[Luca<sp/>Buoncompagni](https://github.com/buoncubi)),<sp/>the<sp/>user<sp/>must<sp/>clone<sp/>the<sp/>mentioned<sp/>repository<sp/>and<sp/>the<sp/>current<sp/>one<sp/>in<sp/>the<sp/>ROS<sp/>workspace.</highlight></codeline>
+<codeline><highlight class="normal">2.<sp/>Install<sp/>the<sp/>[aRMOR<sp/>package](https://github.com/EmaroLab/armor)<sp/>by<sp/>following<sp/>[this<sp/>tutorial](https://github.com/EmaroLab/armor/issues/7).</highlight></codeline>
+<codeline><highlight class="normal">3.<sp/>Clone<sp/>the<sp/>[armor_py_api](https://github.com/EmaroLab/armor_py_api)<sp/>repository<sp/>in<sp/>your<sp/>ROS<sp/>workspace.</highlight></codeline>
+<codeline><highlight class="normal">4.<sp/>Perform<sp/>what<sp/>is<sp/>described<sp/>in<sp/>these<sp/>[notes](https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#note).</highlight></codeline>
+<codeline><highlight class="normal">4.<sp/>Install<sp/>the<sp/>[SMACH<sp/>package](http://wiki.ros.org/smach)<sp/>by<sp/>running<sp/>`sudo<sp/>apt-get<sp/>install<sp/>ros-noetic-executive-smach*`<sp/>or<sp/>equivalent<sp/>for<sp/>your<sp/>ROS<sp/>distribution.</highlight></codeline>
+<codeline><highlight class="normal">5.<sp/>Run<sp/>`chmod<sp/>+x<sp/>&lt;file_name&gt;`<sp/>for<sp/>each<sp/>file<sp/>inside<sp/>the<sp/>folder<sp/>`scripts`<sp/>of<sp/>the<sp/>package<sp/>`ExpRoLab_Assignment2`.</highlight></codeline>
+<codeline><highlight class="normal">6.<sp/>Run<sp/>`catkin_make`<sp/>from<sp/>the<sp/>root<sp/>of<sp/>your<sp/>ROS<sp/>workspace.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">###<sp/>Running</highlight></codeline>
+<codeline><highlight class="normal">To<sp/>correctly<sp/>use<sp/>launch<sp/>file,<sp/>the<sp/>user<sp/>must<sp/>install<sp/>`xterm`<sp/>with<sp/>the<sp/>following<sp/>command<sp/>lines:</highlight></codeline>
+<codeline><highlight class="normal">```sh</highlight></codeline>
+<codeline><highlight class="normal">sudo<sp/>apt-get<sp/>update</highlight></codeline>
+<codeline><highlight class="normal">sudo<sp/>apt-get<sp/>-y<sp/>install<sp/>xterm</highlight></codeline>
+<codeline><highlight class="normal">```</highlight></codeline>
+<codeline><highlight class="normal">Now,<sp/>the<sp/>user<sp/>can<sp/>launch<sp/>the<sp/>program<sp/>frome<sp/>the<sp/>source<sp/>of<sp/>the<sp/>ROS<sp/>workspace<sp/>with<sp/>the<sp/>following<sp/>command:</highlight></codeline>
+<codeline><highlight class="normal">```sh</highlight></codeline>
+<codeline><highlight class="normal">roslaunch<sp/>ExpRoLab_Assignment2<sp/>assignment.launch</highlight></codeline>
+<codeline><highlight class="normal">```</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">##<sp/>System&apos;s<sp/>features</highlight></codeline>
+<codeline><highlight class="normal">###<sp/>Environment</highlight></codeline>
+<codeline><highlight class="normal">The<sp/>enviornment<sp/>used<sp/>for<sp/>the<sp/>assignment<sp/>is<sp/>the<sp/>one<sp/>shown<sp/>in<sp/>the<sp/>following<sp/>figure.<sp/>Some<sp/>of<sp/>the<sp/>markers<sp/>can<sp/>be<sp/>seen<sp/>(there<sp/>are<sp/>7<sp/>markers<sp/>in<sp/>total),<sp/>plus<sp/>the<sp/>robot<sp/>in<sp/>its<sp/>initial<sp/>position.</highlight></codeline>
+<codeline><highlight class="normal">&lt;p<sp/>align=&quot;center&quot;&gt;</highlight></codeline>
+<codeline><highlight class="normal">&lt;img<sp/>src=&quot;https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/environment.png&quot;<sp/>width=70%,<sp/>height=70%&gt;</highlight></codeline>
+<codeline><highlight class="normal">&lt;/p&gt;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">###<sp/>Limitations<sp/>and<sp/>future<sp/>technical<sp/>improvement</highlight></codeline>
+<codeline><highlight class="normal">The<sp/>detection<sp/>of<sp/>the<sp/>markers<sp/>is<sp/>thought<sp/>only<sp/>for<sp/>this<sp/>particular<sp/>environment,<sp/>so<sp/>if<sp/>the<sp/>user<sp/>were<sp/>to<sp/>use<sp/>`marker_detect.cpp`<sp/>for<sp/>another<sp/>environment,<sp/>it<sp/>would<sp/>not<sp/>work.<sp/>Therefore,<sp/>a<sp/>possible<sp/>improvement<sp/>could<sp/>be<sp/>to<sp/>implement<sp/>a<sp/>solution<sp/>that<sp/>is<sp/>as<sp/>general<sp/>as<sp/>possible,<sp/>in<sp/>order<sp/>to<sp/>use<sp/>it<sp/>with<sp/>whatever<sp/>environment<sp/>we<sp/>have<sp/>at<sp/>hand.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">Another<sp/>limitation<sp/>is<sp/>the<sp/>robot<sp/>itself,<sp/>given<sp/>that<sp/>the<sp/>author<sp/>opted<sp/>for<sp/>a<sp/>very<sp/>easy<sp/>solution.<sp/>A<sp/>possible<sp/>improvement<sp/>could<sp/>be<sp/>to<sp/>buil<sp/>a<sp/>more<sp/>sophisticated<sp/>robot<sp/>or<sp/>tu<sp/>use<sp/>the<sp/>URDF<sp/>of<sp/>a<sp/>commercial<sp/>robot.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">##<sp/>Authors<sp/>&amp;<sp/>Contacts</highlight></codeline>
+<codeline><highlight class="normal">[Sara<sp/>Sgambato](https://github.com/sarasgambato)</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">sarasgambato@yahoo.it<sp/>(personal<sp/>email)</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">s4648592@studenti.unige.it<sp/>(institutional<sp/>email)</highlight></codeline>
+    </programlisting>
+    <location file="README.md"/>
+  </compounddef>
+</doxygen>

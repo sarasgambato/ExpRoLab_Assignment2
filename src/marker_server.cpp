@@ -7,10 +7,10 @@
 *
 * \details
 *
-* Services : <BR>
+* Services: <BR>
 * /room_info
 *
-* Description :
+* Description:
 * This node is a server which generates a response based on the request it receives. The request changes based 
 * on the ArUco marker that the robot detects, and the response corresponds to a room with all its connections.
 */
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "marker_server");
 	ros::NodeHandle nh;
-	ros::ServiceServer oracle = nh.advertiseService( "/room_info", markerCallback);
+	ros::ServiceServer oracle = nh.advertiseService("/room_info", markerCallback);
 	ros::spin();
 	ros::shutdown();
 	return 0;

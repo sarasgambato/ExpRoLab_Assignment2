@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.load_ontology &mdash; ExpRoLab_Assignment2 v.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> ExpRoLab_Assignment2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../src.html">src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts.html">scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ExpRoLab_Assignment2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scripts.load_ontology</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scripts.load_ontology</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python3</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: load_ontology</span>
+<span class="sd">    :platform: Unix</span>
+<span class="sd">    :synopsis: Python module to load the topological map.</span>
+
+<span class="sd">.. moduleauthor:: Sara Sgambato s4648592@studenti.unige.it</span>
+
+<span class="sd">This node adds all the wanted individuals in the map and their properties and it creates all the connections based on user inputs.</span>
+
+<span class="sd">Clients:</span>
+<span class="sd">    :attr:`armor_client`: client to communicate with the aRMOR server in order to create the ontology.</span>
+
+<span class="sd">Services:</span>
+<span class="sd">    :attr:`load_map`: service to build the ontology</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">armor_api.armor_client</span> <span class="kn">import</span> <span class="n">ArmorClient</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">realpath</span>
+<span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2.srv</span> <span class="kn">import</span> <span class="n">RoomInformation</span><span class="p">,</span> <span class="n">LoadMap</span><span class="p">,</span> <span class="n">LoadMapResponse</span>
+<span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2.msg</span> <span class="kn">import</span> <span class="n">RoomCoordinate</span>
+
+<div class="viewcode-block" id="LoadMapService"><a class="viewcode-back" href="../../scripts.html#scripts.load_ontology.LoadMapService">[docs]</a><span class="k">class</span> <span class="nc">LoadMapService</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to build the ontology.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Armor stuff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span> <span class="o">=</span> <span class="n">ArmorClient</span><span class="p">(</span><span class="s2">&quot;armor_client&quot;</span><span class="p">,</span> <span class="s2">&quot;my_ontology&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">dirname</span><span class="p">(</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+        <span class="c1"># Put the path of the file.owl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;/../../topological_map/&quot;</span>
+        <span class="c1"># Initializing with buffered manipulation and reasoning</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">load_ref_from_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;topological_map.owl&quot;</span><span class="p">,</span> <span class="s2">&quot;http://bnc/exp-rob-lab/2022-23&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;PELLET&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mount_on_ref</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">set_log_to_terminal</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Connect to marker_server to retrieve info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_info</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="s2">&quot;/room_info&quot;</span><span class="p">,</span> <span class="n">RoomInformation</span><span class="p">)</span>
+
+        <span class="c1"># Variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span> <span class="o">=</span> <span class="n">RoomCoordinate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="LoadMapService.handle_load_map"><a class="viewcode-back" href="../../scripts.html#scripts.load_ontology.LoadMapService.handle_load_map">[docs]</a>    <span class="k">def</span> <span class="nf">handle_load_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function that is called every time the server /load_map receives a request. It gathers information about one room thorugh the</span>
+<span class="sd">        service /room_info and then manipulates the ontology with the received information.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            request(Int): ID of a marker</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            response(RoomCoordinate)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># wait for the server to be available</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span><span class="s2">&quot;/room_info&quot;</span><span class="p">)</span>
+       
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># send a request to the server to get info about the ID</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">marker_id</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span> <span class="o">!=</span> <span class="s2">&quot;No room associated with this marker ID.&quot;</span> <span class="ow">and</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="p">:</span>
+                <span class="c1"># store usefull variables</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span><span class="o">.</span><span class="n">room</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">y</span>
+
+                <span class="c1"># update the ontology</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_ind_to_class</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">,</span> <span class="s1">&#39;LOCATION&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_dataprop_to_ind</span><span class="p">(</span><span class="s1">&#39;visitedAt&#39;</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">,</span> <span class="s1">&#39;Long&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())))</span>
+
+                <span class="c1"># if the room is the recharging one, place the robot there</span>
+                <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span> <span class="o">==</span> <span class="s2">&quot;E&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_objectprop_to_ind</span><span class="p">(</span><span class="s2">&quot;isIn&quot;</span><span class="p">,</span> <span class="s2">&quot;Robot1&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">connections</span><span class="p">)):</span>
+                    <span class="c1"># store usefull variables</span>
+                    <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">through_door</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">through_door</span><span class="p">)</span>
+
+                    <span class="c1"># update the ontology</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_objectprop_to_ind</span><span class="p">(</span><span class="s1">&#39;hasDoor&#39;</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">through_door</span><span class="p">)</span>
+
+
+        <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="c1"># Disjoint all the individuals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">disj_inds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="p">)</span>
+        <span class="c1"># Apply changes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">apply_buffered_changes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sync_buffered_reasoner</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">LoadMapResponse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span><span class="p">)</span></div></div>
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="c1"># Initialize the ROS node</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s1">&#39;load_ontology&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Initialize the LoadMapService class</span>
+    <span class="n">load_map</span> <span class="o">=</span> <span class="n">LoadMapService</span><span class="p">()</span>
+
+    <span class="n">service</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Service</span><span class="p">(</span><span class="s1">&#39;/load_map&#39;</span><span class="p">,</span> <span class="n">LoadMap</span><span class="p">,</span> <span class="n">load_map</span><span class="o">.</span><span class="n">handle_load_map</span><span class="p">)</span>
+
+    <span class="c1"># Spin to keep the node running</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Sara Sgambato.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

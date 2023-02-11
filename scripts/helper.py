@@ -12,11 +12,14 @@ one that manages the synchronization with subscribers and action servers and one
 
 Clients:
     :attr:`armor_client`: client to communicate with the aRMOR server
-    :attr:`motion/planner`: client to communicate with the planner server, which plans a random path with via points
-    :attr:`motion/controller`: client to communicate with the controller server, which has to follow the path provided by the planner server
+    :attr:`move_base`: client to communicate with move_base in order for the robot to move in the simulation
 
 Subscribes to:
-    :attr:`state/battery_low` where the state of the battery (high/low) is published
+    :attr:`state/battery_low`: where the state of the battery (high/low) is published
+    :attr:`/id_list`: where the list with the markers' ID is published
+
+Publishes to:
+    :attr:`/robot_assignment/joint1_position_controller/command`: to move the 1st joint of the robot's arm
 
 Servers:
     :attr:`state/set_pose`: server to set the current robot pose, stored in the 'robot_state' node
@@ -37,6 +40,7 @@ client = ArmorClient("armor_client", "my_ontology")
 
 # Parameter for the busy time in the recharge function of class BehaviorHelper
 BUSY_TIME = anm.BUSY_TIME
+SLEEP_TIME = anm.SLEEP_TIME
 
 class ActionClientHelper:
     """
@@ -502,7 +506,7 @@ class BehaviorHelper:
 
     def look_around(self):
         """
-        Function to check the location that the robot is into.
+        Function to check the location that the robot is into. It is done by rotating the camera of approximately 360 degrees.
         
         Args:
             None

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>utilities.ExpRoLab_Assignment2.architecture_name_mapper &mdash; ExpRoLab_Assignment2 v.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> ExpRoLab_Assignment2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../src.html">src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scripts.html">scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utilities.html">utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ExpRoLab_Assignment2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">utilities.ExpRoLab_Assignment2.architecture_name_mapper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for utilities.ExpRoLab_Assignment2.architecture_name_mapper</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: architecture_name_mapper</span>
+<span class="sd">    :platform: ROS</span>
+<span class="sd">    :synopsis: Python module containing the name of each node, topic, server, actions and parameters used in this architecture.</span>
+<span class="sd">    </span>
+<span class="sd">.. moduleauthor:: Sara Sgambato s4648592@studenti.unige.it</span>
+
+<span class="sd">This module was created to define some useful parameters and the names of servers, nodes and topics, so that if the user wants to change them, they do not</span>
+<span class="sd">have to do so in every file, it is sufficient to change them here.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+
+<span class="c1"># The name of parameter to set the initial robot position.</span>
+<span class="n">PARAM_INITIAL_POSE</span> <span class="o">=</span> <span class="s1">&#39;state/initial_pose&#39;</span>
+<span class="c1"># ---------------------------------------------------------</span>
+
+
+<span class="c1"># The name of the node that sets/gets the pose of the robot and manages its battery.</span>
+<span class="n">NODE_ROBOT_STATE</span> <span class="o">=</span> <span class="s1">&#39;robot_states&#39;</span>
+
+<span class="c1"># The name of the server to get the current robot pose.</span>
+<span class="n">SERVER_GET_POSE</span> <span class="o">=</span> <span class="s1">&#39;state/get_pose&#39;</span>
+
+<span class="c1"># The name of the server to set the current robot pose. </span>
+<span class="n">SERVER_SET_POSE</span> <span class="o">=</span> <span class="s1">&#39;state/set_pose&#39;</span>
+
+<span class="c1"># The name of the client to control the robot</span>
+<span class="n">CLIENT_MOVE_BASE</span> <span class="o">=</span> <span class="s1">&#39;move_base&#39;</span>
+
+<span class="c1"># The name of the topic where the battery state is published.</span>
+<span class="n">TOPIC_BATTERY_LOW</span> <span class="o">=</span> <span class="s1">&#39;state/battery_low&#39;</span>
+
+<span class="c1"># The name of the topic where the list of markers&#39; ID is published</span>
+<span class="n">TOPIC_MARKER_LIST</span> <span class="o">=</span> <span class="s1">&#39;/id_list&#39;</span>
+<span class="c1"># ---------------------------------------------------------</span>
+
+
+<span class="c1"># Parameter indicating the busy waiting time [s]</span>
+<span class="n">BUSY_TIME</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="c1"># Parameter indicating the sleep time [s]</span>
+<span class="n">SLEEP_TIME</span> <span class="o">=</span> <span class="mf">0.3</span>
+
+<span class="c1"># Parameter indicating the battery time [s]</span>
+<span class="n">BATTERY_TIME</span> <span class="o">=</span> <span class="mi">1800</span>
+<span class="c1"># ---------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="tag_log"><a class="viewcode-back" href="../../../utilities.html#utilities.ExpRoLab_Assignment2.architecture_name_mapper.tag_log">[docs]</a><span class="k">def</span> <span class="nf">tag_log</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">producer_tag</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Function used to label each log with a producer tag.</span>
+<span class="sd">	</span>
+<span class="sd">    Args:</span>
+<span class="sd">        msg(Str): message that will be visualized</span>
+<span class="sd">        producer_tag(Str): tag identifying the log producer</span>
+<span class="sd">            </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        log_msg(Str): message for the log</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="s1">&#39;@</span><span class="si">%s</span><span class="s1">&gt;&gt; </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">producer_tag</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Sara Sgambato.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
