@@ -28,7 +28,7 @@ Based on the request that the server receives, different information is sent bac
 ### The `load_ontology` node
 The script [load_ontology.py](https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/scripts/load_ontology.py) has been modified in order to implement a server:
 - **request**: ID of a marker
-- **responsee**: room name and its (x,y) coordinates
+- **responsee**: room name and its _(x,y)_ coordinates
 
 Every time the node receives a new request, it gathers information about the ontology through the `marker_server`, manipulates the ontology with the new information, and then it sends back to the client the new information received.
 
@@ -44,9 +44,9 @@ To correctly use this software, the user must follow these steps to install the 
 2. Install the [aRMOR package](https://github.com/EmaroLab/armor) by following [this tutorial](https://github.com/EmaroLab/armor/issues/7).
 3. Clone the [armor_py_api](https://github.com/EmaroLab/armor_py_api) repository in your ROS workspace.
 4. Perform what is described in these [notes](https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#note).
-4. Install the [SMACH package](http://wiki.ros.org/smach) by running `sudo apt-get install ros-noetic-executive-smach*` or equivalent for your ROS distribution.
-5. Run `chmod +x <file_name>` for each file inside the folder `scripts` of the package `ExpRoLab_Assignment2`.
-6. Run `catkin_make` from the root of your ROS workspace.
+4. Install the packages [SMACH](http://wiki.ros.org/smach), [ros_control](http://wiki.ros.org/ros_control) and [gazebo_ros_control](http://wiki.ros.org/gazebo_ros_control), plus the [Navigation stack](http://wiki.ros.org/navigation).
+6. Run `chmod +x <file_name>` for each file inside the folders `scripts` and `src` of the package `ExpRoLab_Assignment2`.
+7. Run `catkin_make` from the root of your ROS workspace.
 
 ### Running
 To correctly use launch file, the user must install `xterm` with the following command lines:
@@ -65,10 +65,11 @@ The enviornment used for the assignment is the one shown in the following figure
 <p align="center">
 <img src="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/environment.png" width=70%, height=70%>
 </p>
+
 The user can notice that the robot is very simple, with:
-* a chassis with two wheels and a caster;
-* a laser attached to the chassis to perform collision avoidance and to build the map through gmapping;
-* an arm with three links and a camera on top of it to detect the AruCo markers.
+- a chassis with two wheels and a caster;
+- a laser attached to the chassis to perform collision avoidance and to build the map through gmapping;
+- an arm with three links and a camera on top of it to detect the AruCo markers.
 
 
 ### Limitations and future technical improvement
