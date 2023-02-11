@@ -15,6 +15,7 @@ Publishes to:
 
 Servers: 
     :attr:`state/set_pose`: server to set the current robot pose
+    
     :attr:`state/get_pose`: server to get the current robot pose
 """
 

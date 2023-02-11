@@ -5,7 +5,6 @@ Welcome to ExpRoLab_Assignment2's documentation!
    :maxdepth: 2
    :caption: Contents:
    
-   src
    scripts
    utilities
 

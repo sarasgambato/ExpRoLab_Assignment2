@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="utilities" href="utilities.html" />
-    <link rel="prev" title="src" href="src.html" /> 
+    <link rel="prev" title="Welcome to ExpRoLab_Assignment2&#39;s documentation!" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,7 +41,6 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="src.html">src</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">scripts</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-scripts.behavior">Behavior Module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#scripts.behavior.CheckTarget"><code class="docutils literal notranslate"><span class="pre">CheckTarget</span></code></a><ul>
@@ -114,6 +113,8 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#detect-marker-module">Detect Marker Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#marker-server-module">Marker Server Module</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">utilities</a></li>
@@ -266,12 +267,12 @@ The fsm is hierarchical as to create a more modular and robust architecture.</p>
 <span id="helper-module"></span><h2>Helper Module<a class="headerlink" href="#module-scripts.helper" title="Permalink to this heading"></a></h2>
 <span class="target" id="module-helper"></span><p>This module implements three classes representing three different helpers: one to simplify the implementation of a client for ROS action servers,
 one that manages the synchronization with subscribers and action servers and one to help the fsm machine taking decisions.</p>
-<dl class="simple">
-<dt>Clients:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">armor_client</span></code>: client to communicate with the aRMOR server
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">move_base</span></code>: client to communicate with move_base in order for the robot to move in the simulation</p>
+<dl>
+<dt>Clients:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">armor_client</span></code>: client to communicate with the aRMOR server</p>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">move_base</span></code>: client to communicate with move_base in order for the robot to move in the simulation</p>
 </dd>
-<dt>Subscribes to:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">state/battery_low</span></code>: where the state of the battery (high/low) is published
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">/id_list</span></code>: where the list with the markers' ID is published</p>
+<dt>Subscribes to:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">state/battery_low</span></code>: where the state of the battery (high/low) is published</p>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">id_list</span></code>: where the list with the markers' ID is published</p>
 </dd>
 <dt>Publishes to:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">/robot_assignment/joint1_position_controller/command</span></code>: to move the 1st joint of the robot's arm</p>
 </dd>
@@ -656,11 +657,11 @@ This function assumes that no states of the Finite State Machine run concurrentl
 <span id="robot-states-module"></span><h2>Robot States Module<a class="headerlink" href="#module-scripts.robot_states" title="Permalink to this heading"></a></h2>
 <span class="target" id="module-robot_states"></span><p>This node has a class in which two services are defined: one to get the current robot pose and one to set it.
 Also, the class defines a publisher to notify that the battery is low.</p>
-<dl class="simple">
+<dl>
 <dt>Publishes to:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">state/battery_low</span></code> the state of the battery (high/low)</p>
 </dd>
-<dt>Servers:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">state/set_pose</span></code>: server to set the current robot pose
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">state/get_pose</span></code>: server to get the current robot pose</p>
+<dt>Servers:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">state/set_pose</span></code>: server to set the current robot pose</p>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">state/get_pose</span></code>: server to get the current robot pose</p>
 </dd>
 </dl>
 <dl class="py class">
@@ -763,13 +764,19 @@ service /room_info and then manipulates the ontology with the received informati
 </dd></dl>
 
 </div>
+<div class="section" id="detect-marker-module">
+<h2>Detect Marker Module<a class="headerlink" href="#detect-marker-module" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="marker-server-module">
+<h2>Marker Server Module<a class="headerlink" href="#marker-server-module" title="Permalink to this heading"></a></h2>
+</div>
 </div>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="src.html" class="btn btn-neutral float-left" title="src" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to ExpRoLab_Assignment2&#39;s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="utilities.html" class="btn btn-neutral float-right" title="utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -12,11 +12,13 @@ one that manages the synchronization with subscribers and action servers and one
 
 Clients:
     :attr:`armor_client`: client to communicate with the aRMOR server
+
     :attr:`move_base`: client to communicate with move_base in order for the robot to move in the simulation
 
 Subscribes to:
     :attr:`state/battery_low`: where the state of the battery (high/low) is published
-    :attr:`/id_list`: where the list with the markers' ID is published
+    
+    :attr:`id_list`: where the list with the markers' ID is published
 
 Publishes to:
     :attr:`/robot_assignment/joint1_position_controller/command`: to move the 1st joint of the robot's arm

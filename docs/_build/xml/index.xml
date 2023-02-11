@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.8.17">
   <compound refid="namespacesetup" kind="namespace"><name>setup</name>
-    <member refid="namespacesetup_1a504ffa482edfe0eff08f64b2f5dff0e9" kind="variable"><name>setup_args</name></member>
+    <member refid="setup_8py_1a504ffa482edfe0eff08f64b2f5dff0e9" kind="variable"><name>setup_args</name></member>
   </compound>
   <compound refid="_c_make_lists_8txt" kind="file"><name>CMakeLists.txt</name>
   </compound>

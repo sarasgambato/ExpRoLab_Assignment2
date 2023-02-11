@@ -6,13 +6,13 @@
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-<para>The code documentation for this assignment can be found here.</para>
+<para>The code documentation for this assignment can be found <ulink url="https://sarasgambato.github.io/ExpRoLab_Assignment2/index.html">here</ulink>.</para>
 <sect1 id="md__r_e_a_d_m_e_1autotoc_md1">
 <title>Introduction</title>
 <para>In the second assignment of the Experimental Robotics Laboratory course, we were requested to integrate the architecture developed in the <ulink url="https://github.com/sarasgambato/ExpRoLab_Assignment1">1st assignment</ulink> (by modifyig it, eventually) with a robotic simulation.</para>
 <para>We were provided with <ulink url="https://github.com/CarmineD8/assignment2">this package</ulink> and our requirements were:<itemizedlist>
 <listitem><para>to add a robot in the environment and to spawn it in the initial the position x = -6.0, y = 11.0;</para>
-</listitem><listitem><para>to the &quot;semantic&quot; map of the environment by detecting, without moving the base of the robot, all seven AruCo markers that were present around it, by calling the provided service node;</para>
+</listitem><listitem><para>to the &quot;semantic&quot; map of the environment by detecting, without moving the base of the robot, all seven <ulink url="https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html">AruCo markers</ulink> that were present around it, by calling the provided service node;</para>
 </listitem><listitem><para>to start the patrolling algorithm by relying on autonomous navigation strategies and on the information collected and stored in the ontology during the previous step;</para>
 </listitem><listitem><para>to perform a complete scan of the room (by rotating the base or the camera) when a room was reached.</para>
 </listitem></itemizedlist>
@@ -21,19 +21,42 @@
 <sect1 id="md__r_e_a_d_m_e_1autotoc_md2">
 <title>Software architecture</title>
 <para>The user can find a detailed description of the software architecture that was used <ulink url="https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#software-architecture">here</ulink>.</para>
-<para>However, some changes were done:<itemizedlist>
-<listitem><para>The author did some changes in the <computeroutput>planner</computeroutput> and <computeroutput>controller</computeroutput> nodes by author <ulink url="https://github.com/buoncubi">Luca Buoncompagni</ulink><itemizedlist>
-<listitem><para>in the <computeroutput>planner</computeroutput> the via points that are calculated are taken from the linspace between the start position of the robot (the first via point) and the target position (the last via point);</para>
-</listitem><listitem><para>in the <computeroutput>controller</computeroutput> node the robot is ctually controlled through the <computeroutput>move_base</computeroutput> simple action client in order to reach the last via point, which is the target.</para>
-</listitem></itemizedlist>
-</para>
-</listitem></itemizedlist>
-</para>
-<para>the goal that is sent to the <computeroutput>planner</computeroutput> is the actual room the the robot is required to reach</para>
-</sect1>
-<sect1 id="md__r_e_a_d_m_e_1autotoc_md3">
-<title>Installation &amp; running</title>
+<para>However, some changes were done.</para>
+<sect2 id="md__r_e_a_d_m_e_1autotoc_md3">
+<title>The &lt;tt&gt;detect_marker&lt;/tt&gt; node</title>
+<para>This node is responsible of moving the robot&apos;s arm, on the top of which there is a camera, in order to detect the markers around itself: the node subscribes to the topic in which the camera publishes the image data, and an ArUco detector process the image to check if there were some markers every time a new message is received . The ID of the detected markers are stored in a list and published in the topic <computeroutput>id_list</computeroutput> as a message of type <computeroutput>std_msgs/Int32MultiArray</computeroutput>.</para>
+</sect2>
 <sect2 id="md__r_e_a_d_m_e_1autotoc_md4">
+<title>The &lt;tt&gt;marker_server&lt;/tt&gt; node</title>
+<para>This node implements a server:<itemizedlist>
+<listitem><para><bold>request</bold>: ID of a marker</para>
+</listitem><listitem><para><bold>response</bold>: information about a room (its coordinates, the other rooms it is connected to, the doors that connect these rooms)</para>
+</listitem></itemizedlist>
+</para>
+<para>Based on the request that the server receives, different information is sent back to client.</para>
+</sect2>
+<sect2 id="md__r_e_a_d_m_e_1autotoc_md5">
+<title>The &lt;tt&gt;load_ontology&lt;/tt&gt; node</title>
+<para>The script <ulink url="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/scripts/load_ontology.py">load_ontology.py</ulink> has been modified in order to implement a server:<itemizedlist>
+<listitem><para><bold>request</bold>: ID of a marker</para>
+</listitem><listitem><para><bold>responsee</bold>: room name and its _(x,y)_ coordinates</para>
+</listitem></itemizedlist>
+</para>
+<para>Every time the node receives a new request, it gathers information about the ontology through the <computeroutput>marker_server</computeroutput>, manipulates the ontology with the new information, and then it sends back to the client the new information received.</para>
+</sect2>
+<sect2 id="md__r_e_a_d_m_e_1autotoc_md6">
+<title>Other changes</title>
+<para><orderedlist>
+<listitem><para>The <computeroutput>behavior</computeroutput> node, the one implementing the Finite State Machine (FSM), builds the ontology by waiting for the <computeroutput>detect_marker</computeroutput> node to publish the list of IDs, then it sends one ID at a time to the <computeroutput>load_ontology</computeroutput> node, and in the end it stores all the information received by the last mentioned node for further use in the FSM.</para>
+</listitem><listitem><para>Every time the FSM has reasoned about which location to reach, the coordinate of the location are sent as a goal to the <ulink url="http://wiki.ros.org/move_base">move_base</ulink> Action Client, which computes a path to the given point based on the knowledge of the map, which is updated every time the robot moves in the environment through <ulink url="http://wiki.ros.org/gmapping">gmapping</ulink>.</para>
+</listitem><listitem><para>The <computeroutput>planner</computeroutput> and <computeroutput>controller</computeroutput> nodes, which simply simulated the planning of a path and the control of the robot, have been removed from the overall architecture, given that now all of this is done through <computeroutput>move_base</computeroutput>.</para>
+</listitem></orderedlist>
+</para>
+</sect2>
+</sect1>
+<sect1 id="md__r_e_a_d_m_e_1autotoc_md7">
+<title>Installation &amp; running</title>
+<sect2 id="md__r_e_a_d_m_e_1autotoc_md8">
 <title>Installation</title>
 <para>To correctly use this software, the user must follow these steps to install the required packages/repositories.<orderedlist>
 <listitem><para>Given that the author decided to use the file <ulink url="https://github.com/buoncubi/topological_map/blob/main/topological_map.owl">topological_map.owl</ulink> from the repository <ulink url="https://github.com/buoncubi/topological_map">topological_map</ulink> (by author <ulink url="https://github.com/buoncubi">Luca Buoncompagni</ulink>), the user must clone the mentioned repository and the current one in the ROS workspace.</para>
@@ -42,13 +65,13 @@
 </listitem><listitem><para>Perform what is described in these <ulink url="https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#note">notes</ulink>.</para>
 </listitem></orderedlist>
 <orderedlist>
-<listitem><para>Install the <ulink url="http://wiki.ros.org/smach">SMACH package</ulink> by running <computeroutput>sudo apt-get install ros-noetic-executive-smach*</computeroutput> or equivalent for your ROS distribution.</para>
-</listitem><listitem><para>Run <computeroutput>chmod +x &lt;file_name&gt;</computeroutput> for each file inside the folder <computeroutput>scripts</computeroutput> of the package <computeroutput>ExpRoLab_Assignment2</computeroutput>.</para>
+<listitem><para>Install the packages <ulink url="http://wiki.ros.org/smach">SMACH</ulink>, <ulink url="http://wiki.ros.org/ros_control">ros_control</ulink> and <ulink url="http://wiki.ros.org/gazebo_ros_control">gazebo_ros_control</ulink>, plus the <ulink url="http://wiki.ros.org/navigation">Navigation stack</ulink>.</para>
+</listitem><listitem><para>Run <computeroutput>chmod +x &lt;file_name&gt;</computeroutput> for each file inside the folders <computeroutput>scripts</computeroutput> and <computeroutput>src</computeroutput> of the package <computeroutput>ExpRoLab_Assignment2</computeroutput>.</para>
 </listitem><listitem><para>Run <computeroutput>catkin_make</computeroutput> from the root of your ROS workspace.</para>
 </listitem></orderedlist>
 </para>
 </sect2>
-<sect2 id="md__r_e_a_d_m_e_1autotoc_md5">
+<sect2 id="md__r_e_a_d_m_e_1autotoc_md9">
 <title>Running</title>
 <para>To correctly use launch file, the user must install <computeroutput>xterm</computeroutput> with the following command lines: <programlisting filename=".sh"><codeline><highlight class="normal">sudo<sp/>apt-get<sp/>update</highlight></codeline>
 <codeline><highlight class="normal">sudo<sp/>apt-get<sp/>-y<sp/>install<sp/>xterm</highlight></codeline>
@@ -57,21 +80,27 @@
 </programlisting></para>
 </sect2>
 </sect1>
-<sect1 id="md__r_e_a_d_m_e_1autotoc_md6">
+<sect1 id="md__r_e_a_d_m_e_1autotoc_md10">
 <title>System&apos;s features</title>
-<sect2 id="md__r_e_a_d_m_e_1autotoc_md7">
-<title>Environment</title>
+<sect2 id="md__r_e_a_d_m_e_1autotoc_md11">
+<title>Environment &amp; Robot</title>
 <para>The enviornment used for the assignment is the one shown in the following figure. Some of the markers can be seen (there are 7 markers in total), plus the robot in its initial position. </para>
 <para><image type="html" name="environment.png" inline="yes"></image>
  </para>
+<para>The user can notice that the robot is very simple, with:<itemizedlist>
+<listitem><para>a chassis with two wheels and a caster;</para>
+</listitem><listitem><para>a laser attached to the chassis to perform collision avoidance and to build the map through gmapping;</para>
+</listitem><listitem><para>an arm with three links and a camera on top of it to detect the AruCo markers.</para>
+</listitem></itemizedlist>
+</para>
 </sect2>
-<sect2 id="md__r_e_a_d_m_e_1autotoc_md8">
+<sect2 id="md__r_e_a_d_m_e_1autotoc_md12">
 <title>Limitations and future technical improvement</title>
-<para>The detection of the markers is thought only for this particular environment, so if the user were to use <computeroutput>marker_detect.cpp</computeroutput> for another environment, it would not work. Therefore, a possible improvement could be to implement a solution that is as general as possible, in order to use it with whatever environment we have at hand.</para>
-<para>Another limitation is the robot itself, given that the author opted for a very easy solution. A possible improvement could be to buil a more sophisticated robot or tu use the URDF of a commercial robot.</para>
+<para>The detection of the markers is not extensively general, so if the user were to use <computeroutput>detect_marker.cpp</computeroutput> for an environment in which markers were placed differently, it would work badly. Therefore, a possible improvement could be to implement a solution that is as general as possible, in order to use it with whatever environment we want to navgate through.</para>
+<para>Another limitation is the robot itself, given that the author opted for a very easy solution. A possible improvement could be to build a robot with four wheels.</para>
 </sect2>
 </sect1>
-<sect1 id="md__r_e_a_d_m_e_1autotoc_md9">
+<sect1 id="md__r_e_a_d_m_e_1autotoc_md13">
 <title>Authors &amp; Contacts</title>
 <para><ulink url="https://github.com/sarasgambato">Sara Sgambato</ulink></para>
 <para><ulink url="mailto:sarasgambato@yahoo.it">sarasgambato@yahoo.it</ulink> (personal email)</para>

@@ -8,26 +8,43 @@
     </detaileddescription>
     <programlisting>
 <codeline><highlight class="normal">#<sp/>ExpRoLab<sp/>Assignment<sp/>2</highlight></codeline>
-<codeline><highlight class="normal">The<sp/>code<sp/>documentation<sp/>for<sp/>this<sp/>assignment<sp/>can<sp/>be<sp/>found<sp/>here.</highlight></codeline>
+<codeline><highlight class="normal">The<sp/>code<sp/>documentation<sp/>for<sp/>this<sp/>assignment<sp/>can<sp/>be<sp/>found<sp/>[here](https://sarasgambato.github.io/ExpRoLab_Assignment2/index.html).</highlight></codeline>
 <codeline></codeline>
 <codeline><highlight class="normal">##<sp/>Introduction</highlight></codeline>
 <codeline><highlight class="normal">In<sp/>the<sp/>second<sp/>assignment<sp/>of<sp/>the<sp/>Experimental<sp/>Robotics<sp/>Laboratory<sp/>course,<sp/>we<sp/>were<sp/>requested<sp/>to<sp/>integrate<sp/>the<sp/>architecture<sp/>developed<sp/>in<sp/>the<sp/>[1st<sp/>assignment](https://github.com/sarasgambato/ExpRoLab_Assignment1)<sp/>(by<sp/>modifyig<sp/>it,<sp/>eventually)<sp/>with<sp/>a<sp/>robotic<sp/>simulation.</highlight></codeline>
 <codeline></codeline>
 <codeline><highlight class="normal">We<sp/>were<sp/>provided<sp/>with<sp/>[this<sp/>package](https://github.com/CarmineD8/assignment2)<sp/>and<sp/>our<sp/>requirements<sp/>were:</highlight></codeline>
 <codeline><highlight class="normal">-<sp/>to<sp/>add<sp/>a<sp/>robot<sp/>in<sp/>the<sp/>environment<sp/>and<sp/>to<sp/>spawn<sp/>it<sp/>in<sp/>the<sp/>initial<sp/>the<sp/>position<sp/>x<sp/>=<sp/>-6.0,<sp/>y<sp/>=<sp/>11.0;</highlight></codeline>
-<codeline><highlight class="normal">-<sp/>to<sp/>the<sp/>&quot;semantic&quot;<sp/>map<sp/>of<sp/>the<sp/>environment<sp/>by<sp/>detecting,<sp/>without<sp/>moving<sp/>the<sp/>base<sp/>of<sp/>the<sp/>robot,<sp/>all<sp/>seven<sp/>AruCo<sp/>markers<sp/>that<sp/>were<sp/>present<sp/>around<sp/>it,<sp/>by<sp/>calling<sp/>the<sp/>provided<sp/>service<sp/>node;</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>to<sp/>the<sp/>&quot;semantic&quot;<sp/>map<sp/>of<sp/>the<sp/>environment<sp/>by<sp/>detecting,<sp/>without<sp/>moving<sp/>the<sp/>base<sp/>of<sp/>the<sp/>robot,<sp/>all<sp/>seven<sp/>[AruCo<sp/>markers](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html)<sp/>that<sp/>were<sp/>present<sp/>around<sp/>it,<sp/>by<sp/>calling<sp/>the<sp/>provided<sp/>service<sp/>node;</highlight></codeline>
 <codeline><highlight class="normal">-<sp/>to<sp/>start<sp/>the<sp/>patrolling<sp/>algorithm<sp/>by<sp/>relying<sp/>on<sp/>autonomous<sp/>navigation<sp/>strategies<sp/>and<sp/>on<sp/>the<sp/>information<sp/>collected<sp/>and<sp/>stored<sp/>in<sp/>the<sp/>ontology<sp/>during<sp/>the<sp/>previous<sp/>step;</highlight></codeline>
 <codeline><highlight class="normal">-<sp/>to<sp/>perform<sp/>a<sp/>complete<sp/>scan<sp/>of<sp/>the<sp/>room<sp/>(by<sp/>rotating<sp/>the<sp/>base<sp/>or<sp/>the<sp/>camera)<sp/>when<sp/>a<sp/>room<sp/>was<sp/>reached.</highlight></codeline>
 <codeline></codeline>
 <codeline><highlight class="normal">##<sp/>Software<sp/>architecture</highlight></codeline>
 <codeline><highlight class="normal">The<sp/>user<sp/>can<sp/>find<sp/>a<sp/>detailed<sp/>description<sp/>of<sp/>the<sp/>software<sp/>architecture<sp/>that<sp/>was<sp/>used<sp/>[here](https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#software-architecture).</highlight></codeline>
 <codeline></codeline>
-<codeline><highlight class="normal">However,<sp/>some<sp/>changes<sp/>were<sp/>done:</highlight></codeline>
-<codeline><highlight class="normal">-<sp/>The<sp/>author<sp/>did<sp/>some<sp/>changes<sp/>in<sp/>the<sp/>`planner`<sp/>and<sp/>`controller`<sp/>nodes<sp/>by<sp/>author<sp/>[Luca<sp/>Buoncompagni](https://github.com/buoncubi)</highlight></codeline>
-<codeline><highlight class="normal"><sp/><sp/>-<sp/>in<sp/>the<sp/>`planner`<sp/>the<sp/>via<sp/>points<sp/>that<sp/>are<sp/>calculated<sp/>are<sp/>taken<sp/>from<sp/>the<sp/>linspace<sp/>between<sp/>the<sp/>start<sp/>position<sp/>of<sp/>the<sp/>robot<sp/>(the<sp/>first<sp/>via<sp/>point)<sp/>and<sp/>the<sp/>target<sp/>position<sp/>(the<sp/>last<sp/>via<sp/>point);</highlight></codeline>
-<codeline><highlight class="normal"><sp/><sp/>-<sp/>in<sp/>the<sp/>`controller`<sp/>node<sp/>the<sp/>robot<sp/>is<sp/>ctually<sp/>controlled<sp/>through<sp/>the<sp/>`move_base`<sp/>simple<sp/>action<sp/>client<sp/>in<sp/>order<sp/>to<sp/>reach<sp/>the<sp/>last<sp/>via<sp/>point,<sp/>which<sp/>is<sp/>the<sp/>target.</highlight></codeline>
+<codeline><highlight class="normal">However,<sp/>some<sp/>changes<sp/>were<sp/>done.</highlight></codeline>
 <codeline></codeline>
-<codeline><highlight class="normal">the<sp/>goal<sp/>that<sp/>is<sp/>sent<sp/>to<sp/>the<sp/>`planner`<sp/>is<sp/>the<sp/>actual<sp/>room<sp/>the<sp/>the<sp/>robot<sp/>is<sp/>required<sp/>to<sp/>reach<sp/></highlight></codeline>
+<codeline><highlight class="normal">###<sp/>The<sp/>`detect_marker`<sp/>node</highlight></codeline>
+<codeline><highlight class="normal">This<sp/>node<sp/>is<sp/>responsible<sp/>of<sp/>moving<sp/>the<sp/>robot&apos;s<sp/>arm,<sp/>on<sp/>the<sp/>top<sp/>of<sp/>which<sp/>there<sp/>is<sp/>a<sp/>camera,<sp/>in<sp/>order<sp/>to<sp/>detect<sp/>the<sp/>markers<sp/>around<sp/>itself:<sp/>the<sp/>node<sp/>subscribes<sp/>to<sp/>the<sp/>topic<sp/>in<sp/>which<sp/>the<sp/>camera<sp/>publishes<sp/>the<sp/>image<sp/>data,<sp/>and<sp/>an<sp/>ArUco<sp/>detector<sp/>process<sp/>the<sp/>image<sp/>to<sp/>check<sp/>if<sp/>there<sp/>were<sp/>some<sp/>markers<sp/>every<sp/>time<sp/>a<sp/>new<sp/>message<sp/>is<sp/>received<sp/>.<sp/>The<sp/>ID<sp/>of<sp/>the<sp/>detected<sp/>markers<sp/>are<sp/>stored<sp/>in<sp/>a<sp/>list<sp/>and<sp/>published<sp/>in<sp/>the<sp/>topic<sp/>`id_list`<sp/>as<sp/>a<sp/>message<sp/>of<sp/>type<sp/>`std_msgs/Int32MultiArray`.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">###<sp/>The<sp/>`marker_server`<sp/>node</highlight></codeline>
+<codeline><highlight class="normal">This<sp/>node<sp/>implements<sp/>a<sp/>server:</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>**request**:<sp/>ID<sp/>of<sp/>a<sp/>marker</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>**response**:<sp/>information<sp/>about<sp/>a<sp/>room<sp/>(its<sp/>coordinates,<sp/>the<sp/>other<sp/>rooms<sp/>it<sp/>is<sp/>connected<sp/>to,<sp/>the<sp/>doors<sp/>that<sp/>connect<sp/>these<sp/>rooms)</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">Based<sp/>on<sp/>the<sp/>request<sp/>that<sp/>the<sp/>server<sp/>receives,<sp/>different<sp/>information<sp/>is<sp/>sent<sp/>back<sp/>to<sp/>client.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">###<sp/>The<sp/>`load_ontology`<sp/>node</highlight></codeline>
+<codeline><highlight class="normal">The<sp/>script<sp/>[load_ontology.py](https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/scripts/load_ontology.py)<sp/>has<sp/>been<sp/>modified<sp/>in<sp/>order<sp/>to<sp/>implement<sp/>a<sp/>server:</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>**request**:<sp/>ID<sp/>of<sp/>a<sp/>marker</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>**responsee**:<sp/>room<sp/>name<sp/>and<sp/>its<sp/>_(x,y)_<sp/>coordinates</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">Every<sp/>time<sp/>the<sp/>node<sp/>receives<sp/>a<sp/>new<sp/>request,<sp/>it<sp/>gathers<sp/>information<sp/>about<sp/>the<sp/>ontology<sp/>through<sp/>the<sp/>`marker_server`,<sp/>manipulates<sp/>the<sp/>ontology<sp/>with<sp/>the<sp/>new<sp/>information,<sp/>and<sp/>then<sp/>it<sp/>sends<sp/>back<sp/>to<sp/>the<sp/>client<sp/>the<sp/>new<sp/>information<sp/>received.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">###<sp/>Other<sp/>changes</highlight></codeline>
+<codeline><highlight class="normal">1.<sp/>The<sp/>`behavior`<sp/>node,<sp/>the<sp/>one<sp/>implementing<sp/>the<sp/>Finite<sp/>State<sp/>Machine<sp/>(FSM),<sp/>builds<sp/>the<sp/>ontology<sp/>by<sp/>waiting<sp/>for<sp/>the<sp/>`detect_marker`<sp/>node<sp/>to<sp/>publish<sp/>the<sp/>list<sp/>of<sp/>IDs,<sp/>then<sp/>it<sp/>sends<sp/>one<sp/>ID<sp/>at<sp/>a<sp/>time<sp/>to<sp/>the<sp/>`load_ontology`<sp/>node,<sp/>and<sp/>in<sp/>the<sp/>end<sp/>it<sp/>stores<sp/>all<sp/>the<sp/>information<sp/>received<sp/>by<sp/>the<sp/>last<sp/>mentioned<sp/>node<sp/>for<sp/>further<sp/>use<sp/>in<sp/>the<sp/>FSM.</highlight></codeline>
+<codeline><highlight class="normal">2.<sp/>Every<sp/>time<sp/>the<sp/>FSM<sp/>has<sp/>reasoned<sp/>about<sp/>which<sp/>location<sp/>to<sp/>reach,<sp/>the<sp/>coordinate<sp/>of<sp/>the<sp/>location<sp/>are<sp/>sent<sp/>as<sp/>a<sp/>goal<sp/>to<sp/>the<sp/>[move_base](http://wiki.ros.org/move_base)<sp/>Action<sp/>Client,<sp/>which<sp/>computes<sp/>a<sp/>path<sp/>to<sp/>the<sp/>given<sp/>point<sp/>based<sp/>on<sp/>the<sp/>knowledge<sp/>of<sp/>the<sp/>map,<sp/>which<sp/>is<sp/>updated<sp/>every<sp/>time<sp/>the<sp/>robot<sp/>moves<sp/>in<sp/>the<sp/>environment<sp/>through<sp/>[gmapping](http://wiki.ros.org/gmapping).</highlight></codeline>
+<codeline><highlight class="normal">3.<sp/>The<sp/>`planner`<sp/>and<sp/>`controller`<sp/>nodes,<sp/>which<sp/>simply<sp/>simulated<sp/>the<sp/>planning<sp/>of<sp/>a<sp/>path<sp/>and<sp/>the<sp/>control<sp/>of<sp/>the<sp/>robot,<sp/>have<sp/>been<sp/>removed<sp/>from<sp/>the<sp/>overall<sp/>architecture,<sp/>given<sp/>that<sp/>now<sp/>all<sp/>of<sp/>this<sp/>is<sp/>done<sp/>through<sp/>`move_base`.</highlight></codeline>
 <codeline></codeline>
 <codeline><highlight class="normal">##<sp/>Installation<sp/>&amp;<sp/>running</highlight></codeline>
 <codeline><highlight class="normal">###<sp/>Installation</highlight></codeline>
@@ -36,9 +53,9 @@
 <codeline><highlight class="normal">2.<sp/>Install<sp/>the<sp/>[aRMOR<sp/>package](https://github.com/EmaroLab/armor)<sp/>by<sp/>following<sp/>[this<sp/>tutorial](https://github.com/EmaroLab/armor/issues/7).</highlight></codeline>
 <codeline><highlight class="normal">3.<sp/>Clone<sp/>the<sp/>[armor_py_api](https://github.com/EmaroLab/armor_py_api)<sp/>repository<sp/>in<sp/>your<sp/>ROS<sp/>workspace.</highlight></codeline>
 <codeline><highlight class="normal">4.<sp/>Perform<sp/>what<sp/>is<sp/>described<sp/>in<sp/>these<sp/>[notes](https://github.com/sarasgambato/ExpRoLab_Assignment1/blob/master/README.md#note).</highlight></codeline>
-<codeline><highlight class="normal">4.<sp/>Install<sp/>the<sp/>[SMACH<sp/>package](http://wiki.ros.org/smach)<sp/>by<sp/>running<sp/>`sudo<sp/>apt-get<sp/>install<sp/>ros-noetic-executive-smach*`<sp/>or<sp/>equivalent<sp/>for<sp/>your<sp/>ROS<sp/>distribution.</highlight></codeline>
-<codeline><highlight class="normal">5.<sp/>Run<sp/>`chmod<sp/>+x<sp/>&lt;file_name&gt;`<sp/>for<sp/>each<sp/>file<sp/>inside<sp/>the<sp/>folder<sp/>`scripts`<sp/>of<sp/>the<sp/>package<sp/>`ExpRoLab_Assignment2`.</highlight></codeline>
-<codeline><highlight class="normal">6.<sp/>Run<sp/>`catkin_make`<sp/>from<sp/>the<sp/>root<sp/>of<sp/>your<sp/>ROS<sp/>workspace.</highlight></codeline>
+<codeline><highlight class="normal">4.<sp/>Install<sp/>the<sp/>packages<sp/>[SMACH](http://wiki.ros.org/smach),<sp/>[ros_control](http://wiki.ros.org/ros_control)<sp/>and<sp/>[gazebo_ros_control](http://wiki.ros.org/gazebo_ros_control),<sp/>plus<sp/>the<sp/>[Navigation<sp/>stack](http://wiki.ros.org/navigation).</highlight></codeline>
+<codeline><highlight class="normal">6.<sp/>Run<sp/>`chmod<sp/>+x<sp/>&lt;file_name&gt;`<sp/>for<sp/>each<sp/>file<sp/>inside<sp/>the<sp/>folders<sp/>`scripts`<sp/>and<sp/>`src`<sp/>of<sp/>the<sp/>package<sp/>`ExpRoLab_Assignment2`.</highlight></codeline>
+<codeline><highlight class="normal">7.<sp/>Run<sp/>`catkin_make`<sp/>from<sp/>the<sp/>root<sp/>of<sp/>your<sp/>ROS<sp/>workspace.</highlight></codeline>
 <codeline></codeline>
 <codeline><highlight class="normal">###<sp/>Running</highlight></codeline>
 <codeline><highlight class="normal">To<sp/>correctly<sp/>use<sp/>launch<sp/>file,<sp/>the<sp/>user<sp/>must<sp/>install<sp/>`xterm`<sp/>with<sp/>the<sp/>following<sp/>command<sp/>lines:</highlight></codeline>
@@ -52,16 +69,22 @@
 <codeline><highlight class="normal">```</highlight></codeline>
 <codeline></codeline>
 <codeline><highlight class="normal">##<sp/>System&apos;s<sp/>features</highlight></codeline>
-<codeline><highlight class="normal">###<sp/>Environment</highlight></codeline>
+<codeline><highlight class="normal">###<sp/>Environment<sp/>&amp;<sp/>Robot</highlight></codeline>
 <codeline><highlight class="normal">The<sp/>enviornment<sp/>used<sp/>for<sp/>the<sp/>assignment<sp/>is<sp/>the<sp/>one<sp/>shown<sp/>in<sp/>the<sp/>following<sp/>figure.<sp/>Some<sp/>of<sp/>the<sp/>markers<sp/>can<sp/>be<sp/>seen<sp/>(there<sp/>are<sp/>7<sp/>markers<sp/>in<sp/>total),<sp/>plus<sp/>the<sp/>robot<sp/>in<sp/>its<sp/>initial<sp/>position.</highlight></codeline>
 <codeline><highlight class="normal">&lt;p<sp/>align=&quot;center&quot;&gt;</highlight></codeline>
 <codeline><highlight class="normal">&lt;img<sp/>src=&quot;https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/environment.png&quot;<sp/>width=70%,<sp/>height=70%&gt;</highlight></codeline>
 <codeline><highlight class="normal">&lt;/p&gt;</highlight></codeline>
 <codeline></codeline>
-<codeline><highlight class="normal">###<sp/>Limitations<sp/>and<sp/>future<sp/>technical<sp/>improvement</highlight></codeline>
-<codeline><highlight class="normal">The<sp/>detection<sp/>of<sp/>the<sp/>markers<sp/>is<sp/>thought<sp/>only<sp/>for<sp/>this<sp/>particular<sp/>environment,<sp/>so<sp/>if<sp/>the<sp/>user<sp/>were<sp/>to<sp/>use<sp/>`marker_detect.cpp`<sp/>for<sp/>another<sp/>environment,<sp/>it<sp/>would<sp/>not<sp/>work.<sp/>Therefore,<sp/>a<sp/>possible<sp/>improvement<sp/>could<sp/>be<sp/>to<sp/>implement<sp/>a<sp/>solution<sp/>that<sp/>is<sp/>as<sp/>general<sp/>as<sp/>possible,<sp/>in<sp/>order<sp/>to<sp/>use<sp/>it<sp/>with<sp/>whatever<sp/>environment<sp/>we<sp/>have<sp/>at<sp/>hand.</highlight></codeline>
+<codeline><highlight class="normal">The<sp/>user<sp/>can<sp/>notice<sp/>that<sp/>the<sp/>robot<sp/>is<sp/>very<sp/>simple,<sp/>with:</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>a<sp/>chassis<sp/>with<sp/>two<sp/>wheels<sp/>and<sp/>a<sp/>caster;</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>a<sp/>laser<sp/>attached<sp/>to<sp/>the<sp/>chassis<sp/>to<sp/>perform<sp/>collision<sp/>avoidance<sp/>and<sp/>to<sp/>build<sp/>the<sp/>map<sp/>through<sp/>gmapping;</highlight></codeline>
+<codeline><highlight class="normal">-<sp/>an<sp/>arm<sp/>with<sp/>three<sp/>links<sp/>and<sp/>a<sp/>camera<sp/>on<sp/>top<sp/>of<sp/>it<sp/>to<sp/>detect<sp/>the<sp/>AruCo<sp/>markers.</highlight></codeline>
 <codeline></codeline>
-<codeline><highlight class="normal">Another<sp/>limitation<sp/>is<sp/>the<sp/>robot<sp/>itself,<sp/>given<sp/>that<sp/>the<sp/>author<sp/>opted<sp/>for<sp/>a<sp/>very<sp/>easy<sp/>solution.<sp/>A<sp/>possible<sp/>improvement<sp/>could<sp/>be<sp/>to<sp/>buil<sp/>a<sp/>more<sp/>sophisticated<sp/>robot<sp/>or<sp/>tu<sp/>use<sp/>the<sp/>URDF<sp/>of<sp/>a<sp/>commercial<sp/>robot.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">###<sp/>Limitations<sp/>and<sp/>future<sp/>technical<sp/>improvement</highlight></codeline>
+<codeline><highlight class="normal">The<sp/>detection<sp/>of<sp/>the<sp/>markers<sp/>is<sp/>not<sp/>extensively<sp/>general,<sp/>so<sp/>if<sp/>the<sp/>user<sp/>were<sp/>to<sp/>use<sp/>`detect_marker.cpp`<sp/>for<sp/>an<sp/>environment<sp/>in<sp/>which<sp/>markers<sp/>were<sp/>placed<sp/>differently,<sp/>it<sp/>would<sp/>work<sp/>badly.<sp/>Therefore,<sp/>a<sp/>possible<sp/>improvement<sp/>could<sp/>be<sp/>to<sp/>implement<sp/>a<sp/>solution<sp/>that<sp/>is<sp/>as<sp/>general<sp/>as<sp/>possible,<sp/>in<sp/>order<sp/>to<sp/>use<sp/>it<sp/>with<sp/>whatever<sp/>environment<sp/>we<sp/>want<sp/>to<sp/>navgate<sp/>through.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">Another<sp/>limitation<sp/>is<sp/>the<sp/>robot<sp/>itself,<sp/>given<sp/>that<sp/>the<sp/>author<sp/>opted<sp/>for<sp/>a<sp/>very<sp/>easy<sp/>solution.<sp/>A<sp/>possible<sp/>improvement<sp/>could<sp/>be<sp/>to<sp/>build<sp/>a<sp/>robot<sp/>with<sp/>four<sp/>wheels.</highlight></codeline>
 <codeline></codeline>
 <codeline><highlight class="normal">##<sp/>Authors<sp/>&amp;<sp/>Contacts</highlight></codeline>
 <codeline><highlight class="normal">[Sara<sp/>Sgambato](https://github.com/sarasgambato)</highlight></codeline>

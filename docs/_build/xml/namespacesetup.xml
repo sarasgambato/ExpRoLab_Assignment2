@@ -3,7 +3,7 @@
   <compounddef id="namespacesetup" kind="namespace" language="Python">
     <compoundname>setup</compoundname>
       <sectiondef kind="var">
-      <memberdef kind="variable" id="namespacesetup_1a504ffa482edfe0eff08f64b2f5dff0e9" prot="public" static="no" mutable="no">
+      <memberdef kind="variable" id="setup_8py_1a504ffa482edfe0eff08f64b2f5dff0e9" prot="public" static="no" mutable="no">
         <type></type>
         <definition>setup.setup_args</definition>
         <argsstring></argsstring>
