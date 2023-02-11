@@ -1,5 +1,5 @@
 # ExpRoLab Assignment 2
-The code documentation for this assignment can be found here.
+The code documentation for this assignment can be found [here](https://sarasgambato.github.io/ExpRoLab_Assignment2/index.html).
 
 ## Introduction
 In the second assignment of the Experimental Robotics Laboratory course, we were requested to integrate the architecture developed in the [1st assignment](https://github.com/sarasgambato/ExpRoLab_Assignment1) (by modifyig it, eventually) with a robotic simulation.
