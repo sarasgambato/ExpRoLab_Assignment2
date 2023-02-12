@@ -32,6 +32,14 @@ The script [load_ontology.py](https://github.com/sarasgambato/ExpRoLab_Assignmen
 
 Every time the node receives a new request, it gathers information about the ontology through the `marker_server`, manipulates the ontology with the new information, and then it sends back to the client the new information received.
 
+### The `robot_state` node
+This node was modify to make sure that if the battery was low, the robot would start recharging only after having reched the desired room. To do so, the node subscribes to the `/odom` topic and checks that the position of the robot is inside a circumference with radius = 2 and centered in the coordinates of the recharging room.
+
+The radius of the circumference was determined empirically by:
+1. making the robot go to the recharging room multiple times;
+2. getting each time the pose of the robot when `move_bose` recognized that the goal was reached;
+3. among the collected poses, getting the one which was farthest from the actual coordinates of the recharging room, and adding a small offset.
+
 ### Other changes
 1. The `behavior` node, the one implementing the Finite State Machine (FSM), builds the ontology by waiting for the `detect_marker` node to publish the list of IDs, then it sends one ID at a time to the `load_ontology` node, and in the end it stores all the information received by the last mentioned node for further use in the FSM.
 2. Every time the FSM has reasoned about which location to reach, the coordinate of the location are sent as a goal to the [move_base](http://wiki.ros.org/move_base) Action Client, which computes a path to the given point based on the knowledge of the map, which is updated every time the robot moves in the environment through [gmapping](http://wiki.ros.org/gmapping).
@@ -70,6 +78,11 @@ The user can notice that the robot is very simple, with:
 - a chassis with two wheels and a caster;
 - a laser attached to the chassis to perform collision avoidance and to build the map through gmapping;
 - an arm with three links and a camera on top of it to detect the AruCo markers.
+
+The robot moves in the environment based on some rules:
+- if there are no urgent locations, visit the corridors
+- if there are urgent locations, visit them based on their timestamp (the ones which have not been visited for the longest have precedence)
+- once a location has been reached, the robot moves its camera of 360 degrees
 
 
 ### Limitations and future technical improvement
