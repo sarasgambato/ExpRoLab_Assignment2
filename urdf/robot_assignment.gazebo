@@ -23,6 +23,9 @@
 	<gazebo reference="arm_link_03">
 		<material>Gazebo/Red</material>
 	</gazebo>
+	<gazebo reference="laser">
+		<material>Gazebo/Blue</material>
+	</gazebo>
 
     <!-- Plugin for the differential drive -->
     <gazebo>
@@ -61,7 +64,7 @@
 		<sensor type="camera" name="camera1">
 			<update_rate>30.0</update_rate>
 			<camera name="head">
-				<horizontal_fov>1.047</horizontal_fov>
+				<horizontal_fov>1.0</horizontal_fov>
 				<image>
 					  <width>1280</width>
 					  <height>720</height>

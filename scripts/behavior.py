@@ -58,6 +58,8 @@ class LoadOntology(State):
         self._helper = helper
         # Usefull variables
         self.rooms = {}
+        self.recharging_room = rospy.get_param("config/recharge_room")
+        self.recharging_room = self.recharging_room["room"]
 
     def execute(self, userdata):
         """
@@ -73,7 +75,7 @@ class LoadOntology(State):
 
         while not self._helper._marker_list:
             pass
-        
+         
         # Connect to the /load_map service to build the ontology
         load_map_client = rospy.ServiceProxy("/load_map", LoadMap)
 
@@ -92,8 +94,9 @@ class LoadOntology(State):
 
         print("Map successfully initialized.")
         userdata.rooms = self.rooms
-        recharge_room = Point(x = self.rooms["E"].get("x"),
-                              y = self.rooms["E"].get("y"))
+        recharge_room = rospy.get_param("config/recharge_room")
+        recharge_room = Point(x = recharge_room["x"],
+                              y = recharge_room["y"])
         userdata.recharge_room = recharge_room
 
         return TRANS_INITIALIZED
@@ -121,21 +124,18 @@ class Recharging(State):
         """
 
         recharge_room = userdata.recharge_room
-        goal = MoveBaseGoal()
-        goal.target_pose.pose.position.x = recharge_room.x
-        goal.target_pose.pose.position.y = recharge_room.y
-        goal.target_pose.pose.orientation.w = 1
-        goal.target_pose.header.frame_id = "map"
-        goal.target_pose.header.stamp = rospy.Time.now()
         # Send the goal to the move_base client
+        goal = self._helper.create_move_base_goal(recharge_room)
         self._helper.move_base_client.send_goal(goal)
 
         while not rospy.is_shutdown():
             self._helper.mutex.acquire()
+            print(self._helper.move_base_client.is_done())
             try:
-                if not self._helper.is_battery_low() and self._helper.move_base_client.is_done():
+                if not self._helper.is_battery_low():
                     self._helper.reset_states()
                     return TRANS_RECHARGED
+                
             finally:
                 self._helper.mutex.release()
             rospy.sleep(SLEEP_TIME)
@@ -173,13 +173,13 @@ class DecideTarget(State):
                     self._sm_helper.recharge(current_pose)
                     return TRANS_RECHARGING
                 
-                else:
+                if not self._helper.is_battery_low():
                     userdata.choice = choice
                     userdata.current_pose = current_pose
                     return TRANS_DECIDED
 
             finally:
-                self._helper.mutex.release()
+                self._helper.mutex.release()            
             rospy.sleep(SLEEP_TIME)
 
 class CheckTarget(State):
@@ -205,18 +205,13 @@ class CheckTarget(State):
             Str: 'recharging' if the battery is low, 'went_target' otherwise
         """
 
-        # send the goal to the controller by sending only the last point of the target
         rooms = userdata.rooms
         current_pose = userdata.current_pose
         choice = userdata.choice
-        # Get the coordinates of the decided location
-        goal = MoveBaseGoal()
-        goal.target_pose.pose.position.x = rooms[choice].get("x")
-        goal.target_pose.pose.position.y = rooms[choice].get("y")
-        goal.target_pose.pose.orientation.w = 1
-        goal.target_pose.header.frame_id = "map"
-        goal.target_pose.header.stamp = rospy.Time.now()
-        # Send the goal to the move_base client
+        # Get the coordinates of the decided location and send the goal to the move_base client
+        target = Point(x = rooms[choice].get("x"),
+                       y = rooms[choice].get("y"))
+        goal = self._helper.create_move_base_goal(target)
         self._helper.move_base_client.send_goal(goal)
 
         while not rospy.is_shutdown():

@@ -9,6 +9,11 @@
 
 This node adds all the wanted individuals in the map and their properties and it creates all the connections based on user inputs.
 
+Params:
+    :attr:`config/recharge_room`: name and (x,y) coordinates of the recharging room
+    
+    :attr:`config/robot`: name of the robot
+
 Clients:
     :attr:`armor_client`: client to communicate with the aRMOR server in order to create the ontology.
 
@@ -18,7 +23,6 @@ Services:
 
 import rospy
 import time
-import random
 from armor_api.armor_client import ArmorClient
 from os.path import dirname, realpath
 from ExpRoLab_Assignment2.srv import RoomInformation, LoadMap, LoadMapResponse
@@ -47,6 +51,8 @@ class LoadMapService():
         self.room_coordinates = []
         self.room_coordinates = RoomCoordinate()
         self.individuals = []
+        self.recharge_room = rospy.get_param("config/recharge_room")
+        self.robot = rospy.get_param("config/robot")
 
     def handle_load_map(self, request):
         """
@@ -70,18 +76,26 @@ class LoadMapService():
             if res.room != "No room associated with this marker ID." and res.room not in self.individuals:
                 # store usefull variables
                 self.individuals.append(res.room)
-                self.locations.append(res.room)
                 self.room_coordinates.room = res.room
                 self.room_coordinates.x = res.x
                 self.room_coordinates.y = res.y
 
                 # update the ontology
-                self.armor_client.manipulation.add_ind_to_class(res.room, 'LOCATION')
+                self.armor_client.manipulation.add_ind_to_class(res.room, "LOCATION")
                 self.armor_client.manipulation.add_dataprop_to_ind('visitedAt', res.room, 'Long', str(int(time.time())))
 
                 # if the room is the recharging one, place the robot there
-                if res.room == "E":
-                    self.armor_client.manipulation.add_objectprop_to_ind("isIn", "Robot1", "E")
+                if res.room == self.recharge_room["room"]:
+                    self.armor_client.manipulation.add_objectprop_to_ind("isIn", self.robot, res.room)
+                    self.armor_client.manipulation.add_ind_to_class(res.room, "CORRIDOR")
+
+                # if the first letter is an R, add the individual to the ROOM class
+                if res.room[:1] == "R":
+                    self.armor_client.manipulation.add_ind_to_class(res.room, "ROOM")
+
+                # if the first letter is a C, add the individual to the CORRIDOR class
+                if res.room[:1] == "C":
+                    self.armor_client.manipulation.add_ind_to_class(res.room, "CORRIDOR")
 
                 for j in range(0, len(res.connections)):
                     # store usefull variables

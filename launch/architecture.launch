@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <launch>
 
+    <rosparam param="config/recharge_room"> {room: "E", x: 1.5, y: 8.0} </rosparam>
+    <rosparam param="config/robot"> Robot1 </rosparam>
+
     <!-- Run the armor_service node -->
         <node name = "armor_service" 
             pkg="armor" 
@@ -18,6 +21,13 @@
 
         <node pkg = "ExpRoLab_Assignment2"  
             type = "robot_states.py" 
-            name = "robot_state"/>
+            name = "robot_state"
+            output = "screen"
+            launch-prefix="xterm -fa 'Monospace' -fs 10 -e"/>
+
+        <node pkg="ExpRoLab_Assignment2"
+            type="load_ontology.py" 
+            name="load_ontology" />
+
 
 </launch>

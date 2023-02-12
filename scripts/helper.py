@@ -10,14 +10,14 @@
 This module implements three classes representing three different helpers: one to simplify the implementation of a client for ROS action servers, 
 one that manages the synchronization with subscribers and action servers and one to help the fsm machine taking decisions.
 
-Clients:
-    :attr:`armor_client`: client to communicate with the aRMOR server
+Params:
+    :attr:`config/recharge_room`: name and (x,y) coordinates of the recharging room
 
-    :attr:`move_base`: client to communicate with move_base in order for the robot to move in the simulation
+    :attr:`config/robot`: name of the robot
 
 Subscribes to:
     :attr:`state/battery_low`: where the state of the battery (high/low) is published
-    
+
     :attr:`id_list`: where the list with the markers' ID is published
 
 Publishes to:
@@ -25,6 +25,11 @@ Publishes to:
 
 Servers:
     :attr:`state/set_pose`: server to set the current robot pose, stored in the 'robot_state' node
+
+Clients:
+    :attr:`armor_client`: client to communicate with the aRMOR server
+
+    :attr:`move_base`: client to communicate with move_base in order for the robot to move in the simulation
 """
 
 import rospy
@@ -36,7 +41,7 @@ from armor_api.armor_client import ArmorClient
 from ExpRoLab_Assignment2 import architecture_name_mapper as anm
 from std_msgs.msg import Bool, Int32MultiArray, Float64
 from ExpRoLab_Assignment2.srv import SetPose
-from move_base_msgs.msg import MoveBaseAction
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 client = ArmorClient("armor_client", "my_ontology")
 
@@ -72,7 +77,7 @@ class ActionClientHelper:
         Function to send the action server a new goal only if it is not running; the server can be used only by one client at a time.
 
         Args:
-            goal(PlanGoal): goal to be sent made up of two Points, start and target in (x, y) coordinates
+            goal: goal to be sent made up of two Points, start and target in (x, y) coordinates
 
         Returns:
             None
@@ -227,7 +232,7 @@ class InterfaceHelper:
         rospy.Subscriber(anm.TOPIC_BATTERY_LOW, Bool, self.battery_callback_)
         # Define the callback associated with the marker ID ROS subscribers
         rospy.Subscriber(anm.TOPIC_MARKER_LIST, Int32MultiArray, self.list_callback_)
-        # Define the clients for the the plan and control action servers
+        # Define the client for move_base
         self.move_base_client = ActionClientHelper(anm.CLIENT_MOVE_BASE, MoveBaseAction, mutex=self.mutex)
         # Variable to store the markers' ID
         self._marker_list = []
@@ -321,16 +326,38 @@ class InterfaceHelper:
         except rospy.ServiceException as e:
             print("Cannot set current robot position")
 
+    @staticmethod
+    def create_move_base_goal(room):
+        """
+        Function used to create the goal to send to the /move_base Action Client
+
+        Args:
+            room(Point): (x,y) coordinates of the room the robot has to reach
+
+        Returns:
+            goal(MoveBaseGoal): goal that will be sent to move_base
+        """
+
+        goal = MoveBaseGoal()
+        goal.target_pose.pose.position.x = room.x
+        goal.target_pose.pose.position.y = room.y
+        goal.target_pose.pose.orientation.w = 1
+        goal.target_pose.header.frame_id = "map"
+        goal.target_pose.header.stamp = rospy.Time.now()
+
+        return goal
+
 class BehaviorHelper:
     """
     Class that implements some function useful for the fsm to take decisions.
     """
 
     def __init__(self):
-        # If the main individual has to be changed, change this value
-        self.robot = 'Robot1'
-        # If the recharging room has to be changed, change this value
-        self.recharging_room = 'E'
+        # If the main individual has to be changed, change the value in the architecture.launch
+        self.robot = rospy.get_param("config/robot")
+        # If the recharging room has to be changed, change the value in the architecture.launch
+        self.recharging_room = rospy.get_param("config/recharge_room")
+        self.recharging_room = self.recharging_room["room"]
         # Publisher to the joint that moves the camera
         self.joint01_pub = rospy.Publisher("/robot_assignment/joint1_position_controller/command", Float64, queue_size=1)
 
@@ -496,10 +523,8 @@ class BehaviorHelper:
         last_change = self.get_timestamp('now', self.robot)
         now = str(int(time.time()))
         client.manipulation.replace_dataprop_b2_ind('now', self.robot, 'Long', now, last_change)
-        corridors = self.get_queried('corridors')
-        if target not in corridors: # the 'visitedAt' property of the corridors has not been considered, given that they will never be urgent
-            last_visit = self.get_timestamp('visitedAt', target)
-            client.manipulation.replace_dataprop_b2_ind('visitedAt', target, 'Long', now, last_visit)
+        last_visit = self.get_timestamp('visitedAt', target)
+        client.manipulation.replace_dataprop_b2_ind('visitedAt', target, 'Long', now, last_visit)
         # Check the room
         self.look_around()        
         print('Reached target...mmh...everything clear')
@@ -519,11 +544,13 @@ class BehaviorHelper:
 
         cam_pose = 0
         msg = Float64()
+        # move the camera of 0.5 rad until its position will be equal to 6 rad
         while (cam_pose != 6):
             cam_pose = cam_pose + 0.5
             msg.data = cam_pose
             self.joint01_pub.publish(msg)
             rospy.sleep(0.2)
+        # return to the initial configuration
         msg.data = 0
         self.joint01_pub.publish(msg)
 
