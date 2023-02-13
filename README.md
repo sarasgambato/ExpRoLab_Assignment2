@@ -44,6 +44,7 @@ The radius of the circumference was determined empirically by:
 1. The `behavior` node, the one implementing the Finite State Machine (FSM), builds the ontology by waiting for the `detect_marker` node to publish the list of IDs, then it sends one ID at a time to the `load_ontology` node, and in the end it stores all the information received by the last mentioned node for further use in the FSM.
 2. Every time the FSM has reasoned about which location to reach, the coordinate of the location are sent as a goal to the [move_base](http://wiki.ros.org/move_base) Action Client, which computes a path to the given point based on the knowledge of the map, which is updated every time the robot moves in the environment through [gmapping](http://wiki.ros.org/gmapping).
 3. The `planner` and `controller` nodes, which simply simulated the planning of a path and the control of the robot, have been removed from the overall architecture, given that now all of this is done through `move_base`.
+4. The `helper` has been divided into 2 different files for sake of simplicity, one concerning the behavior of the FSM and one concerning the interaction with Action Clients.
 
 ## Installation & running
 ### Installation
@@ -67,6 +68,15 @@ Now, the user can launch the program frome the source of the ROS workspace with 
 roslaunch ExpRoLab_Assignment2 assignment.launch
 ```
 
+### ROS Parameters
+The software requires the following ROS parameters:
+- `config/recharge_room`: name and coordinates of the room where the robot has to recharge.
+- `config/robot`: name of the robot.
+- `state/initial_pose`: intial position of the robot.
+- `config/floor_markers`: AruCo markers placed on the floor.
+- `config/ceil_markers`: AruCo markers placed on the top of the walls.
+
+
 ## System's features
 ### Environment & Robot
 The enviornment used for the assignment is the one shown in the following figure. Some of the markers can be seen (there are 7 markers in total), plus the robot in its initial position.
@@ -83,6 +93,23 @@ The robot moves in the environment based on some rules:
 - if there are no urgent locations, visit the corridors
 - if there are urgent locations, visit them based on their timestamp (the ones which have not been visited for the longest have precedence)
 - once a location has been reached, the robot moves its camera of 360 degrees
+
+### Running code behavior
+In the following figures the user can see all the relevant parts showing how the software works
+<p align="center">
+<img src="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/init.png" width=70%, height=70%>
+</p>
+<p align="center">
+<img src="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/visit.png" width=70%, height=70%>
+</p>
+<p align="center">
+<img src="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/final.png" width=49%, height=49%>
+</p>
+
+In particular:
+- ***Top***: the software creates the ontology based on the information received from the AruCo markers; after that, it calculates the path (highlated in green in Rviz) to reach the desired position. At the left bottom of the panel there is also the camera vision.
+- ***Middle***: after the robot finishes checking a room, it decides in which location to go next and recalculates the path.
+- ***Bottom***: the whole environment scanned by the robot.
 
 
 ### Limitations and future technical improvement
