@@ -8,7 +8,7 @@
 .. moduleauthor:: Sara Sgambato s4648592@studenti.unige.it
 
 This module implements two classes representing two different helpers: one to simplify the implementation of a client for ROS action servers and 
-one that manages the synchronization with subscribers and action servers. and one to help the fsm machine taking decisions.
+one that manages the synchronization with subscribers and action servers.
 
 Subscribes to:
     :attr:`state/battery_low`: where the state of the battery (high/low) is published
