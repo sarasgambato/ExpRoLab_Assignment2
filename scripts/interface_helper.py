@@ -15,9 +15,6 @@ Subscribes to:
 
     :attr:`id_list`: where the list with the markers' ID is published
 
-Servers:
-    :attr:`state/set_pose`: server to set the current robot pose, stored in the 'robot_state' node
-
 Clients:
     :attr:`move_base`: client to communicate with move_base in order for the robot to move in the simulation
 """
