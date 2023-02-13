@@ -15,6 +15,10 @@ The user can find a detailed description of the software architecture that was u
 
 However, some changes were done.
 
+<p align="center">
+<img src="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/UML2.png" width=70%, height=70%>
+</p>
+
 ### The `detect_marker` node
 This node is responsible of moving the robot's arm, on the top of which there is a camera, in order to detect the markers around itself: the node subscribes to the topic in which the camera publishes the image data, and an ArUco detector process the image to check if there were some markers every time a new message is received . The ID of the detected markers are stored in a list and published in the topic `id_list` as a message of type `std_msgs/Int32MultiArray`.
 
