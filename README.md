@@ -32,7 +32,7 @@ Based on the request that the server receives, different information is sent bac
 ### The `load_ontology` node
 The script [load_ontology.py](https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/scripts/load_ontology.py) has been modified in order to implement a server:
 - **request**: ID of a marker
-- **responsee**: room name and its _(x,y)_ coordinates
+- **response**: room name and its _(x,y)_ coordinates
 
 Every time the node receives a new request, it gathers information about the ontology through the `marker_server`, manipulates the ontology with the new information, and then it sends back to the client the new information received.
 
