@@ -95,21 +95,26 @@ The robot moves in the environment based on some rules:
 - once a location has been reached, the robot moves its camera of 360 degrees
 
 ### Running code behavior
-In the following figures the user can see all the relevant parts showing how the software works
+
+In the following figure the user can see that the arm of the robot is rotated and that all markers have been detected.
+<p align="center">
+<img src="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/detecting.png" width=70%, height=70%>
+</p>
+
+In the following figure the software creates the ontology based on the information received from the AruCo markers; after that, it calculates the path (highlated in green in Rviz) to reach the desired position. At the left bottom of the panel there is also the camera vision.
 <p align="center">
 <img src="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/init.png" width=70%, height=70%>
 </p>
+
+In the following figure after the robot finishes checking a room, it decides in which location to go next and recalculates the path.
 <p align="center">
 <img src="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/visit.png" width=70%, height=70%>
 </p>
+
+In the following figure there is the whole scanned environment in Rviz.
 <p align="center">
 <img src="https://github.com/sarasgambato/ExpRoLab_Assignment2/blob/main/images/final.png" width=49%, height=49%>
 </p>
-
-In particular:
-- ***Top***: the software creates the ontology based on the information received from the AruCo markers; after that, it calculates the path (highlated in green in Rviz) to reach the desired position. At the left bottom of the panel there is also the camera vision.
-- ***Middle***: after the robot finishes checking a room, it decides in which location to go next and recalculates the path.
-- ***Bottom***: the whole environment scanned by the robot.
 
 
 ### Limitations and future technical improvement
