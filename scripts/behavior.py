@@ -64,7 +64,7 @@ class LoadOntology(State):
     def execute(self, userdata):
         """
         Function that is executed when entering the INITIALIZE_MAP state of the fsm. 
-        It calls the detecter of the markers and waits for the map to be built, then it transitions to the state NORMAL.
+        It waits for the marker list to be published, then it uses the /load_map service to build the ontology, then it transitions to the state NORMAL.
 
         Args: 
             userdata: not used
