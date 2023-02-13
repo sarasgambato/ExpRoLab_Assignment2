@@ -7,7 +7,7 @@
 
 .. moduleauthor:: Sara Sgambato s4648592@studenti.unige.it
 
-This node adds all the wanted individuals in the map and their properties and it creates all the connections based on user inputs.
+This node adds all the wanted individuals in the map and their properties and it creates all the connections based on information received from the /room_info service.
 
 Params:
     :attr:`config/recharge_room`: name and (x,y) coordinates of the recharging room
