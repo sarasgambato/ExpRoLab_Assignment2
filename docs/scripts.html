@@ -219,7 +219,7 @@ It decides in which location to go next based on some criteria.</p>
 <dt class="sig sig-object py" id="scripts.behavior.LoadOntology.execute">
 <span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">userdata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/behavior.html#LoadOntology.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.behavior.LoadOntology.execute" title="Permalink to this definition"></a></dt>
 <dd><p>Function that is executed when entering the INITIALIZE_MAP state of the fsm.
-It calls the detecter of the markers and waits for the map to be built, then it transitions to the state NORMAL.</p>
+It waits for the marker list to be published, then it uses the /load_map service to build the ontology, then it transitions to the state NORMAL.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>userdata</strong> -- not used</p>
@@ -271,12 +271,10 @@ The fsm is hierarchical as to create a more modular and robust architecture.</p>
 <div class="section" id="module-scripts.interface_helper">
 <span id="interface-helper-module"></span><h2>Interface Helper Module<a class="headerlink" href="#module-scripts.interface_helper" title="Permalink to this heading"></a></h2>
 <span class="target" id="module-interface_helper"></span><p>This module implements two classes representing two different helpers: one to simplify the implementation of a client for ROS action servers and
-one that manages the synchronization with subscribers and action servers. and one to help the fsm machine taking decisions.</p>
+one that manages the synchronization with subscribers and action servers.</p>
 <dl>
 <dt>Subscribes to:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">state/battery_low</span></code>: where the state of the battery (high/low) is published</p>
 <p><code class="xref py py-attr docutils literal notranslate"><span class="pre">id_list</span></code>: where the list with the markers' ID is published</p>
-</dd>
-<dt>Servers:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">state/set_pose</span></code>: server to set the current robot pose, stored in the 'robot_state' node</p>
 </dd>
 <dt>Clients:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">move_base</span></code>: client to communicate with move_base in order for the robot to move in the simulation</p>
 </dd>
@@ -785,7 +783,7 @@ Also, the class defines a publisher to notify that the battery is low.</p>
 </div>
 <div class="section" id="module-scripts.load_ontology">
 <span id="load-ontology-module"></span><h2>Load Ontology Module<a class="headerlink" href="#module-scripts.load_ontology" title="Permalink to this heading"></a></h2>
-<span class="target" id="module-load_ontology"></span><p>This node adds all the wanted individuals in the map and their properties and it creates all the connections based on user inputs.</p>
+<span class="target" id="module-load_ontology"></span><p>This node adds all the wanted individuals in the map and their properties and it creates all the connections based on information received from the /room_info service.</p>
 <dl>
 <dt>Params:</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">config/recharge_room</span></code>: name and (x,y) coordinates of the recharging room</p>
 <p><code class="xref py py-attr docutils literal notranslate"><span class="pre">config/robot</span></code>: name of the robot</p>

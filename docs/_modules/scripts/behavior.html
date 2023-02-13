@@ -134,7 +134,7 @@
 <div class="viewcode-block" id="LoadOntology.execute"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.LoadOntology.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Function that is executed when entering the INITIALIZE_MAP state of the fsm. </span>
-<span class="sd">        It calls the detecter of the markers and waits for the map to be built, then it transitions to the state NORMAL.</span>
+<span class="sd">        It waits for the marker list to be published, then it uses the /load_map service to build the ontology, then it transitions to the state NORMAL.</span>
 
 <span class="sd">        Args: </span>
 <span class="sd">            userdata: not used</span>
