@@ -80,20 +80,27 @@
 <span class="sd">This node has a class in which two services are defined: one to get the current robot pose and one to set it.</span>
 <span class="sd">Also, the class defines a publisher to notify that the battery is low.</span>
 
+<span class="sd">Params:</span>
+<span class="sd">    :attr:`config/recharge_room`: name and (x,y) coordinates of the recharging room</span>
+
 <span class="sd">Publishes to:</span>
 <span class="sd">    :attr:`state/battery_low` the state of the battery (high/low)</span>
 
+<span class="sd">Subscribes to:</span>
+<span class="sd">    :attr:`/odom` the position of the robot</span>
+
 <span class="sd">Servers: </span>
 <span class="sd">    :attr:`state/set_pose`: server to set the current robot pose</span>
-<span class="sd">    </span>
+
 <span class="sd">    :attr:`state/get_pose`: server to get the current robot pose</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">rospy</span>
-<span class="kn">from</span> <span class="nn">helper</span> <span class="kn">import</span> <span class="n">InterfaceHelper</span>
+<span class="kn">from</span> <span class="nn">interface_helper</span> <span class="kn">import</span> <span class="n">InterfaceHelper</span>
 <span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2</span> <span class="kn">import</span> <span class="n">architecture_name_mapper</span> <span class="k">as</span> <span class="n">anm</span>
 <span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="n">Bool</span>
+<span class="kn">from</span> <span class="nn">nav_msgs.msg</span> <span class="kn">import</span> <span class="n">Odometry</span>
 <span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2.msg</span> <span class="kn">import</span> <span class="n">Point</span>
 <span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2.srv</span> <span class="kn">import</span> <span class="n">GetPose</span><span class="p">,</span> <span class="n">GetPoseResponse</span><span class="p">,</span> <span class="n">SetPose</span><span class="p">,</span> <span class="n">SetPoseResponse</span>
 
@@ -108,15 +115,17 @@
 <span class="sd">    Class implementing the services of the robot position and the publisher for the battery level.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Initialise this node</span>
-        <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">NODE_ROBOT_STATE</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">helper</span><span class="p">):</span>
         <span class="c1"># Initialise robot position</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pose</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># Initialise battery level</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># Initialise the helper</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">helper</span>
         <span class="n">rospy</span><span class="o">.</span><span class="n">Service</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">SERVER_GET_POSE</span><span class="p">,</span> <span class="n">GetPose</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pose</span><span class="p">)</span>
         <span class="n">rospy</span><span class="o">.</span><span class="n">Service</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">SERVER_SET_POSE</span><span class="p">,</span> <span class="n">SetPose</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_pose</span><span class="p">)</span>
+        <span class="c1"># Subscriber to odometry</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="s2">&quot;/odom&quot;</span><span class="p">,</span> <span class="n">Odometry</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">odometry_cb</span><span class="p">)</span>
         <span class="c1"># Start publisher on a separate thread</span>
         <span class="n">th</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">is_battery_low_</span><span class="p">)</span>
         <span class="n">th</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
@@ -124,6 +133,22 @@
         <span class="n">log_msg</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Initialise node `</span><span class="si">{</span><span class="n">anm</span><span class="o">.</span><span class="n">NODE_ROBOT_STATE</span><span class="si">}</span><span class="s1">` with services `</span><span class="si">{</span><span class="n">anm</span><span class="o">.</span><span class="n">SERVER_GET_POSE</span><span class="si">}</span><span class="s1">` and &#39;</span>
                    <span class="sa">f</span><span class="s1">&#39;`</span><span class="si">{</span><span class="n">anm</span><span class="o">.</span><span class="n">SERVER_SET_POSE</span><span class="si">}</span><span class="s1">`, and topic </span><span class="si">{</span><span class="n">anm</span><span class="o">.</span><span class="n">TOPIC_BATTERY_LOW</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">tag_log</span><span class="p">(</span><span class="n">log_msg</span><span class="p">,</span> <span class="n">LOG_TAG</span><span class="p">))</span>
+
+        <span class="c1"># variable to get</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recharge_room</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;config/recharge_room&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RobotState.odometry_cb"><a class="viewcode-back" href="../../scripts.html#scripts.robot_states.RobotState.odometry_cb">[docs]</a>    <span class="k">def</span> <span class="nf">odometry_cb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function implementing the callback of the subscriber to the /odom topic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            msg(Odometry): pose of the robot</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_odom</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="c1">#store the (x,y,z) position of the robot</span></div>
 
 <div class="viewcode-block" id="RobotState.set_pose"><a class="viewcode-back" href="../../scripts.html#scripts.robot_states.RobotState.set_pose">[docs]</a>    <span class="k">def</span> <span class="nf">set_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -189,17 +214,29 @@
         <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
             <span class="c1"># Publish battery level: &#39;True&#39; if the battery is low, &#39;False&#39; otherwise</span>
             <span class="n">publisher</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span><span class="p">))</span>
-            <span class="c1"># Simulate battery usage</span>
-            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">BATTERY_TIME</span><span class="p">)</span>
-            <span class="c1"># Change battery state</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span></div></div>
+            <span class="c1"># Simulate battery usage, count if the battery is high or if the robot has reached the recharging position</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">BATTERY_TIME</span><span class="p">)</span>
+                <span class="c1"># Change battery state</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">tag_log</span><span class="p">(</span><span class="s1">&#39;Robot got low battery.&#39;</span><span class="p">,</span> <span class="n">LOG_TAG</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If the battery is low, start recharging as soon as the robot enters a </span>
+                <span class="c1"># circumference of radius 2 centered in the recharging point</span>
+                <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_odom</span><span class="o">.</span><span class="n">x</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_recharge_room</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_odom</span><span class="o">.</span><span class="n">y</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_recharge_room</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">2</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">BATTERY_TIME</span><span class="p">)</span>
+                    <span class="c1"># Change battery state</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">tag_log</span><span class="p">(</span><span class="s1">&#39;Robot got a fully charged battery.&#39;</span><span class="p">,</span> <span class="n">LOG_TAG</span><span class="p">))</span></div></div>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="c1"># Instantiate the node manager class</span>
-    <span class="n">RobotState</span><span class="p">()</span>
-
+    <span class="c1"># Initialise this node</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">NODE_ROBOT_STATE</span><span class="p">,</span> <span class="n">log_level</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
     <span class="c1"># Define the helper</span>
     <span class="n">helper</span> <span class="o">=</span> <span class="n">InterfaceHelper</span><span class="p">()</span>
+
+    <span class="c1"># Instantiate the node manager class</span>
+    <span class="n">RobotState</span><span class="p">(</span><span class="n">helper</span><span class="p">)</span>
 
     <span class="c1"># Initialize robot position</span>
     <span class="n">robot_pose_param</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="n">anm</span><span class="o">.</span><span class="n">PARAM_INITIAL_POSE</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>

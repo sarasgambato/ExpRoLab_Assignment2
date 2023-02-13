@@ -124,7 +124,7 @@ In this callback function each ID corresponds to a different room. Each time the
 </simplesect>
 Services: <linebreak/>
  <computeroutput>/room_info</computeroutput></para>
-<para>Description: This node is a server which generates a response based on the request it receives. The request changes based on the ArUco marker that the robot detects, and the response corresponds to a room with all its connections. </para>
+<para>Description: This node is a server which generates a response based on the request it receives. The request changes based on the AruCo marker that the robot detects, and the response corresponds to a room with all its connections. </para>
     </detaileddescription>
     <programlisting>
 <codeline lineno="1"></codeline>

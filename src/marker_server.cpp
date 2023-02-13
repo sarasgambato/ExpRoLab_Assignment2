@@ -12,7 +12,7 @@
 *
 * Description:
 * This node is a server which generates a response based on the request it receives. The request changes based 
-* on the ArUco marker that the robot detects, and the response corresponds to a room with all its connections.
+* on the AruCo marker that the robot detects, and the response corresponds to a room with all its connections.
 */
 
 #include <ros/ros.h>

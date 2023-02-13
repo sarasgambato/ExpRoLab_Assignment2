@@ -22,10 +22,10 @@ import smach_ros
 from smach import StateMachine, State
 from load_ontology import LoadMap
 from ExpRoLab_Assignment2 import architecture_name_mapper as anm
-from helper import InterfaceHelper, BehaviorHelper
+from interface_helper import InterfaceHelper
+from fsm_helper import BehaviorHelper
 from ExpRoLab_Assignment2.msg import Point
 from ExpRoLab_Assignment2.srv import LoadMap
-from move_base_msgs.msg import MoveBaseGoal
 from os.path import dirname, realpath
 
 # list of states in the machine

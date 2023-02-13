@@ -92,10 +92,10 @@
 <span class="kn">from</span> <span class="nn">smach</span> <span class="kn">import</span> <span class="n">StateMachine</span><span class="p">,</span> <span class="n">State</span>
 <span class="kn">from</span> <span class="nn">load_ontology</span> <span class="kn">import</span> <span class="n">LoadMap</span>
 <span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2</span> <span class="kn">import</span> <span class="n">architecture_name_mapper</span> <span class="k">as</span> <span class="n">anm</span>
-<span class="kn">from</span> <span class="nn">helper</span> <span class="kn">import</span> <span class="n">InterfaceHelper</span><span class="p">,</span> <span class="n">BehaviorHelper</span>
+<span class="kn">from</span> <span class="nn">interface_helper</span> <span class="kn">import</span> <span class="n">InterfaceHelper</span>
+<span class="kn">from</span> <span class="nn">fsm_helper</span> <span class="kn">import</span> <span class="n">BehaviorHelper</span>
 <span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2.msg</span> <span class="kn">import</span> <span class="n">Point</span>
 <span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2.srv</span> <span class="kn">import</span> <span class="n">LoadMap</span>
-<span class="kn">from</span> <span class="nn">move_base_msgs.msg</span> <span class="kn">import</span> <span class="n">MoveBaseGoal</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">realpath</span>
 
 <span class="c1"># list of states in the machine</span>
@@ -128,6 +128,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">helper</span>
         <span class="c1"># Usefull variables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rooms</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recharging_room</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;config/recharge_room&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recharging_room</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recharging_room</span><span class="p">[</span><span class="s2">&quot;room&quot;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="LoadOntology.execute"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.LoadOntology.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -143,7 +145,7 @@
 
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">_marker_list</span><span class="p">:</span>
             <span class="k">pass</span>
-        
+         
         <span class="c1"># Connect to the /load_map service to build the ontology</span>
         <span class="n">load_map_client</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="s2">&quot;/load_map&quot;</span><span class="p">,</span> <span class="n">LoadMap</span><span class="p">)</span>
 
@@ -162,8 +164,9 @@
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Map successfully initialized.&quot;</span><span class="p">)</span>
         <span class="n">userdata</span><span class="o">.</span><span class="n">rooms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rooms</span>
-        <span class="n">recharge_room</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rooms</span><span class="p">[</span><span class="s2">&quot;E&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">),</span>
-                              <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rooms</span><span class="p">[</span><span class="s2">&quot;E&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">))</span>
+        <span class="n">recharge_room</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;config/recharge_room&quot;</span><span class="p">)</span>
+        <span class="n">recharge_room</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">recharge_room</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span>
+                              <span class="n">y</span> <span class="o">=</span> <span class="n">recharge_room</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">])</span>
         <span class="n">userdata</span><span class="o">.</span><span class="n">recharge_room</span> <span class="o">=</span> <span class="n">recharge_room</span>
 
         <span class="k">return</span> <span class="n">TRANS_INITIALIZED</span></div></div>
@@ -191,21 +194,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">recharge_room</span> <span class="o">=</span> <span class="n">userdata</span><span class="o">.</span><span class="n">recharge_room</span>
-        <span class="n">goal</span> <span class="o">=</span> <span class="n">MoveBaseGoal</span><span class="p">()</span>
-        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">recharge_room</span><span class="o">.</span><span class="n">x</span>
-        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">recharge_room</span><span class="o">.</span><span class="n">y</span>
-        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="s2">&quot;map&quot;</span>
-        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">stamp</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
         <span class="c1"># Send the goal to the move_base client</span>
+        <span class="n">goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">create_move_base_goal</span><span class="p">(</span><span class="n">recharge_room</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">move_base_client</span><span class="o">.</span><span class="n">send_goal</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
 
         <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">move_base_client</span><span class="o">.</span><span class="n">is_done</span><span class="p">())</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">is_battery_low</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">move_base_client</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">is_battery_low</span><span class="p">():</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
                     <span class="k">return</span> <span class="n">TRANS_RECHARGED</span>
+                
             <span class="k">finally</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
             <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_TIME</span><span class="p">)</span></div></div>
@@ -243,13 +243,13 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_sm_helper</span><span class="o">.</span><span class="n">recharge</span><span class="p">(</span><span class="n">current_pose</span><span class="p">)</span>
                     <span class="k">return</span> <span class="n">TRANS_RECHARGING</span>
                 
-                <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">is_battery_low</span><span class="p">():</span>
                     <span class="n">userdata</span><span class="o">.</span><span class="n">choice</span> <span class="o">=</span> <span class="n">choice</span>
                     <span class="n">userdata</span><span class="o">.</span><span class="n">current_pose</span> <span class="o">=</span> <span class="n">current_pose</span>
                     <span class="k">return</span> <span class="n">TRANS_DECIDED</span>
 
             <span class="k">finally</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>            
             <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_TIME</span><span class="p">)</span></div></div>
 
 <div class="viewcode-block" id="CheckTarget"><a class="viewcode-back" href="../../scripts.html#scripts.behavior.CheckTarget">[docs]</a><span class="k">class</span> <span class="nc">CheckTarget</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
@@ -275,18 +275,13 @@
 <span class="sd">            Str: &#39;recharging&#39; if the battery is low, &#39;went_target&#39; otherwise</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># send the goal to the controller by sending only the last point of the target</span>
         <span class="n">rooms</span> <span class="o">=</span> <span class="n">userdata</span><span class="o">.</span><span class="n">rooms</span>
         <span class="n">current_pose</span> <span class="o">=</span> <span class="n">userdata</span><span class="o">.</span><span class="n">current_pose</span>
         <span class="n">choice</span> <span class="o">=</span> <span class="n">userdata</span><span class="o">.</span><span class="n">choice</span>
-        <span class="c1"># Get the coordinates of the decided location</span>
-        <span class="n">goal</span> <span class="o">=</span> <span class="n">MoveBaseGoal</span><span class="p">()</span>
-        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">rooms</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
-        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">rooms</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
-        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="s2">&quot;map&quot;</span>
-        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">stamp</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-        <span class="c1"># Send the goal to the move_base client</span>
+        <span class="c1"># Get the coordinates of the decided location and send the goal to the move_base client</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">rooms</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">),</span>
+                       <span class="n">y</span> <span class="o">=</span> <span class="n">rooms</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">))</span>
+        <span class="n">goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">create_move_base_goal</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">move_base_client</span><span class="o">.</span><span class="n">send_goal</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
 
         <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>

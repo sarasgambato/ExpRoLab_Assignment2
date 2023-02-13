@@ -90,7 +90,7 @@ In the main function the robot&apos;s arm is moved until all markers have been d
       </memberdef>
       </sectiondef>
     <briefdescription>
-<para>Node which moves the arm of the robot to detect the ArUco markers in the environment. </para>
+<para>Node which moves the arm of the robot to detect the ArCo markers in the environment. </para>
     </briefdescription>
     <detaileddescription>
 <para><simplesect kind="author"><para>Sara Sgambato </para>
@@ -124,7 +124,7 @@ Subscribes to: <linebreak/>
 <para><computeroutput>/robot_assignment/joint2_position_controller/command</computeroutput> topic of the 2nd joint of the robot&apos;s arm</para>
 <para><computeroutput>/robot_assignment/joint3_position_controller/command</computeroutput> topic of the 3rd joint of the robot&apos;s arm</para>
 <para><computeroutput>/id_list</computeroutput> topic in which all the markers&apos; ID are published</para>
-<para>Description: The node is used to detect the ArUco markers that are in the environment. The joints of the robot&apos;s arm are moved via the respective topic detect the 7 markers around itself, first on the floor and then on the walls, and once all markers have been detected their ID are published as a list. </para>
+<para>Description: The node is used to detect the AruCo markers that are in the environment. The joints of the robot&apos;s arm are moved via the respective topic detect the 7 markers around itself, first on the floor and then on the walls, and once all markers have been detected their ID are published as a list. </para>
     </detaileddescription>
     <programlisting>
 <codeline lineno="1"></codeline>

@@ -81,6 +81,7 @@
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
@@ -90,7 +91,7 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts.html#scripts.helper.ActionClientHelper">ActionClientHelper (class in scripts.helper)</a>
+      <li><a href="scripts.html#scripts.interface_helper.ActionClientHelper">ActionClientHelper (class in scripts.interface_helper)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -107,7 +108,7 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts.html#scripts.helper.InterfaceHelper.battery_callback_">battery_callback_() (scripts.helper.InterfaceHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.InterfaceHelper.battery_callback_">battery_callback_() (scripts.interface_helper.InterfaceHelper method)</a>
 </li>
       <li><a href="scripts.html#scripts.robot_states.RobotState.battery_notifier_">battery_notifier_() (scripts.robot_states.RobotState method)</a>
 </li>
@@ -120,7 +121,7 @@
         <li><a href="scripts.html#module-behavior">module</a>
 </li>
       </ul></li>
-      <li><a href="scripts.html#scripts.helper.BehaviorHelper">BehaviorHelper (class in scripts.helper)</a>
+      <li><a href="scripts.html#scripts.fsm_helper.BehaviorHelper">BehaviorHelper (class in scripts.fsm_helper)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -128,15 +129,17 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts.html#scripts.helper.ActionClientHelper.cancel_goals">cancel_goals() (scripts.helper.ActionClientHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.ActionClientHelper.cancel_goals">cancel_goals() (scripts.interface_helper.ActionClientHelper method)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.BehaviorHelper.check_location">check_location() (scripts.helper.BehaviorHelper method)</a>
+      <li><a href="scripts.html#scripts.fsm_helper.BehaviorHelper.check_location">check_location() (scripts.fsm_helper.BehaviorHelper method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="scripts.html#scripts.behavior.CheckTarget">CheckTarget (class in scripts.behavior)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.BehaviorHelper.clean_list">clean_list() (scripts.helper.BehaviorHelper method)</a>
+      <li><a href="scripts.html#scripts.fsm_helper.BehaviorHelper.clean_list">clean_list() (scripts.fsm_helper.BehaviorHelper method)</a>
+</li>
+      <li><a href="scripts.html#scripts.interface_helper.InterfaceHelper.create_move_base_goal">create_move_base_goal() (scripts.interface_helper.InterfaceHelper static method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -144,7 +147,7 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts.html#scripts.helper.BehaviorHelper.decide_location">decide_location() (scripts.helper.BehaviorHelper method)</a>
+      <li><a href="scripts.html#scripts.fsm_helper.BehaviorHelper.decide_location">decide_location() (scripts.fsm_helper.BehaviorHelper method)</a>
 </li>
       <li><a href="scripts.html#scripts.behavior.DecideTarget">DecideTarget (class in scripts.behavior)</a>
 </li>
@@ -190,7 +193,7 @@
 </li>
       <li><a href="scripts.html#_CPPv4N11DetectAruco2nhE">DetectAruco::nh (C++ member)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.ActionClientHelper.done_callback_">done_callback_() (scripts.helper.ActionClientHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.ActionClientHelper.done_callback_">done_callback_() (scripts.interface_helper.ActionClientHelper method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -214,8 +217,17 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts.html#scripts.helper.ActionClientHelper.feedback_callback_">feedback_callback_() (scripts.helper.ActionClientHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.ActionClientHelper.feedback_callback_">feedback_callback_() (scripts.interface_helper.ActionClientHelper method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    fsm_helper
+
+      <ul>
+        <li><a href="scripts.html#module-fsm_helper">module</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -224,13 +236,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="scripts.html#scripts.robot_states.RobotState.get_pose">get_pose() (scripts.robot_states.RobotState method)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.BehaviorHelper.get_queried">get_queried() (scripts.helper.BehaviorHelper method)</a>
+      <li><a href="scripts.html#scripts.fsm_helper.BehaviorHelper.get_queried">get_queried() (scripts.fsm_helper.BehaviorHelper method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts.html#scripts.helper.ActionClientHelper.get_results">get_results() (scripts.helper.ActionClientHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.ActionClientHelper.get_results">get_results() (scripts.interface_helper.ActionClientHelper method)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.BehaviorHelper.get_timestamp">get_timestamp() (scripts.helper.BehaviorHelper method)</a>
+      <li><a href="scripts.html#scripts.fsm_helper.BehaviorHelper.get_timestamp">get_timestamp() (scripts.fsm_helper.BehaviorHelper method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -241,33 +253,31 @@
       <li><a href="scripts.html#scripts.load_ontology.LoadMapService.handle_load_map">handle_load_map() (scripts.load_ontology.LoadMapService method)</a>
 </li>
   </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li>
-    helper
-
-      <ul>
-        <li><a href="scripts.html#module-helper">module</a>
-</li>
-      </ul></li>
-  </ul></td>
 </tr></table>
 
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts.html#scripts.helper.InterfaceHelper.init_robot_pose">init_robot_pose() (scripts.helper.InterfaceHelper static method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.InterfaceHelper.init_robot_pose">init_robot_pose() (scripts.interface_helper.InterfaceHelper static method)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.InterfaceHelper">InterfaceHelper (class in scripts.helper)</a>
+      <li>
+    interface_helper
+
+      <ul>
+        <li><a href="scripts.html#module-interface_helper">module</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.InterfaceHelper.is_battery_low">is_battery_low() (scripts.helper.InterfaceHelper method)</a>
+      </ul></li>
+      <li><a href="scripts.html#scripts.interface_helper.InterfaceHelper">InterfaceHelper (class in scripts.interface_helper)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scripts.html#scripts.interface_helper.InterfaceHelper.is_battery_low">is_battery_low() (scripts.interface_helper.InterfaceHelper method)</a>
+</li>
       <li><a href="scripts.html#scripts.robot_states.RobotState.is_battery_low_">is_battery_low_() (scripts.robot_states.RobotState method)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.ActionClientHelper.is_done">is_done() (scripts.helper.ActionClientHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.ActionClientHelper.is_done">is_done() (scripts.interface_helper.ActionClientHelper method)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.ActionClientHelper.is_running">is_running() (scripts.helper.ActionClientHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.ActionClientHelper.is_running">is_running() (scripts.interface_helper.ActionClientHelper method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -275,7 +285,7 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts.html#scripts.helper.InterfaceHelper.list_callback_">list_callback_() (scripts.helper.InterfaceHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.InterfaceHelper.list_callback_">list_callback_() (scripts.interface_helper.InterfaceHelper method)</a>
 </li>
       <li>
     load_ontology
@@ -290,7 +300,7 @@
 </li>
       <li><a href="scripts.html#scripts.behavior.LoadOntology">LoadOntology (class in scripts.behavior)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.BehaviorHelper.look_around">look_around() (scripts.helper.BehaviorHelper method)</a>
+      <li><a href="scripts.html#scripts.fsm_helper.BehaviorHelper.look_around">look_around() (scripts.fsm_helper.BehaviorHelper method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -312,7 +322,9 @@
 </li>
         <li><a href="scripts.html#module-behavior">behavior</a>
 </li>
-        <li><a href="scripts.html#module-helper">helper</a>
+        <li><a href="scripts.html#module-fsm_helper">fsm_helper</a>
+</li>
+        <li><a href="scripts.html#module-interface_helper">interface_helper</a>
 </li>
         <li><a href="scripts.html#module-load_ontology">load_ontology</a>
 </li>
@@ -320,7 +332,9 @@
 </li>
         <li><a href="scripts.html#module-scripts.behavior">scripts.behavior</a>
 </li>
-        <li><a href="scripts.html#module-scripts.helper">scripts.helper</a>
+        <li><a href="scripts.html#module-scripts.fsm_helper">scripts.fsm_helper</a>
+</li>
+        <li><a href="scripts.html#module-scripts.interface_helper">scripts.interface_helper</a>
 </li>
         <li><a href="scripts.html#module-scripts.load_ontology">scripts.load_ontology</a>
 </li>
@@ -332,22 +346,30 @@
   </ul></td>
 </tr></table>
 
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scripts.html#scripts.robot_states.RobotState.odometry_cb">odometry_cb() (scripts.robot_states.RobotState method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts.html#scripts.helper.BehaviorHelper.reason_reach">reason_reach() (scripts.helper.BehaviorHelper method)</a>
+      <li><a href="scripts.html#scripts.fsm_helper.BehaviorHelper.reason_reach">reason_reach() (scripts.fsm_helper.BehaviorHelper method)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.BehaviorHelper.reason_urg">reason_urg() (scripts.helper.BehaviorHelper method)</a>
+      <li><a href="scripts.html#scripts.fsm_helper.BehaviorHelper.reason_urg">reason_urg() (scripts.fsm_helper.BehaviorHelper method)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.BehaviorHelper.recharge">recharge() (scripts.helper.BehaviorHelper method)</a>
+      <li><a href="scripts.html#scripts.fsm_helper.BehaviorHelper.recharge">recharge() (scripts.fsm_helper.BehaviorHelper method)</a>
 </li>
       <li><a href="scripts.html#scripts.behavior.Recharging">Recharging (class in scripts.behavior)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts.html#scripts.helper.ActionClientHelper.reset_client_states">reset_client_states() (scripts.helper.ActionClientHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.ActionClientHelper.reset_client_states">reset_client_states() (scripts.interface_helper.ActionClientHelper method)</a>
 </li>
-      <li><a href="scripts.html#scripts.helper.InterfaceHelper.reset_states">reset_states() (scripts.helper.InterfaceHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.InterfaceHelper.reset_states">reset_states() (scripts.interface_helper.InterfaceHelper method)</a>
 </li>
       <li>
     robot_states
@@ -372,12 +394,21 @@
 </li>
       </ul></li>
       <li>
-    scripts.helper
+    scripts.fsm_helper
 
       <ul>
-        <li><a href="scripts.html#module-scripts.helper">module</a>
+        <li><a href="scripts.html#module-scripts.fsm_helper">module</a>
 </li>
       </ul></li>
+      <li>
+    scripts.interface_helper
+
+      <ul>
+        <li><a href="scripts.html#module-scripts.interface_helper">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     scripts.load_ontology
 
@@ -385,8 +416,6 @@
         <li><a href="scripts.html#module-scripts.load_ontology">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     scripts.robot_states
 
@@ -394,7 +423,7 @@
         <li><a href="scripts.html#module-scripts.robot_states">module</a>
 </li>
       </ul></li>
-      <li><a href="scripts.html#scripts.helper.ActionClientHelper.send_goal">send_goal() (scripts.helper.ActionClientHelper method)</a>
+      <li><a href="scripts.html#scripts.interface_helper.ActionClientHelper.send_goal">send_goal() (scripts.interface_helper.ActionClientHelper method)</a>
 </li>
       <li><a href="scripts.html#scripts.robot_states.RobotState.set_pose">set_pose() (scripts.robot_states.RobotState method)</a>
 </li>

@@ -81,7 +81,7 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-<para>ArUco marker detector </para>
+<para>AruCo marker detector </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -95,7 +95,7 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-<para>vector of ArUco markers </para>
+<para>vector of AruCo markers </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -227,10 +227,10 @@
         <argsstring>()</argsstring>
         <name>DetectAruco</name>
         <briefdescription>
-<para>Constructor of the ArUco class. </para>
+<para>Constructor of the <ref refid="class_detect_aruco" kindref="compound">DetectAruco</ref> class. </para>
         </briefdescription>
         <detaileddescription>
-<para>In the constructor the publishers and the subscriber are initialized. Also, The constructor takes two parameter relative to the ArUco markers in the environment, the ones on the floor and the ones on the top of the walls. </para>
+<para>In the constructor the publishers and the subscriber are initialized. Also, The constructor takes two parameter relative to the AruCo markers in the environment, the ones on the floor and the ones on the top of the walls. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -313,7 +313,7 @@ The size of the list containing the IDs of the detected markers is compared with
       </memberdef>
       </sectiondef>
     <briefdescription>
-<para>Class to detect the ArUco markers in the environment. </para>
+<para>Class to detect the AruCo markers in the environment. </para>
     </briefdescription>
     <detaileddescription>
 <para>This class subscribes to the topic relative to what the robot is seeing and it publishes the joints&apos; positions in order for the robot arm to move, and once a marker has been detected its ID is stored inside a variable. </para>

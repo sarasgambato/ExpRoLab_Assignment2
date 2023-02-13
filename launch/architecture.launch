@@ -11,7 +11,7 @@
             args="it.emarolab.armor.ARMORMainService"/>
 
         <!-- Run the architecture's component. -->
-        <rosparam param="state/initial_pose"> [0.0, 0.0] </rosparam>
+        <rosparam param="state/initial_pose"> [-6.0, 11.0] </rosparam>
 
         <node pkg = "ExpRoLab_Assignment2"  
             type = "behavior.py"      

@@ -27,8 +27,7 @@ Servers:
 
 import threading
 import rospy
-import math
-from helper import InterfaceHelper
+from interface_helper import InterfaceHelper
 from ExpRoLab_Assignment2 import architecture_name_mapper as anm
 from std_msgs.msg import Bool
 from nav_msgs.msg import Odometry

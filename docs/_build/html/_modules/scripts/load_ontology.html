@@ -79,6 +79,11 @@
 
 <span class="sd">This node adds all the wanted individuals in the map and their properties and it creates all the connections based on user inputs.</span>
 
+<span class="sd">Params:</span>
+<span class="sd">    :attr:`config/recharge_room`: name and (x,y) coordinates of the recharging room</span>
+<span class="sd">    </span>
+<span class="sd">    :attr:`config/robot`: name of the robot</span>
+
 <span class="sd">Clients:</span>
 <span class="sd">    :attr:`armor_client`: client to communicate with the aRMOR server in order to create the ontology.</span>
 
@@ -88,7 +93,6 @@
 
 <span class="kn">import</span> <span class="nn">rospy</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">from</span> <span class="nn">armor_api.armor_client</span> <span class="kn">import</span> <span class="n">ArmorClient</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">realpath</span>
 <span class="kn">from</span> <span class="nn">ExpRoLab_Assignment2.srv</span> <span class="kn">import</span> <span class="n">RoomInformation</span><span class="p">,</span> <span class="n">LoadMap</span><span class="p">,</span> <span class="n">LoadMapResponse</span>
@@ -117,6 +121,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span> <span class="o">=</span> <span class="n">RoomCoordinate</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recharge_room</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;config/recharge_room&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;config/robot&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LoadMapService.handle_load_map"><a class="viewcode-back" href="../../scripts.html#scripts.load_ontology.LoadMapService.handle_load_map">[docs]</a>    <span class="k">def</span> <span class="nf">handle_load_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -140,18 +146,26 @@
             <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span> <span class="o">!=</span> <span class="s2">&quot;No room associated with this marker ID.&quot;</span> <span class="ow">and</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="p">:</span>
                 <span class="c1"># store usefull variables</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span><span class="o">.</span><span class="n">room</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">room_coordinates</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">y</span>
 
                 <span class="c1"># update the ontology</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_ind_to_class</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">,</span> <span class="s1">&#39;LOCATION&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_ind_to_class</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">,</span> <span class="s2">&quot;LOCATION&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_dataprop_to_ind</span><span class="p">(</span><span class="s1">&#39;visitedAt&#39;</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">,</span> <span class="s1">&#39;Long&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())))</span>
 
                 <span class="c1"># if the room is the recharging one, place the robot there</span>
-                <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span> <span class="o">==</span> <span class="s2">&quot;E&quot;</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_objectprop_to_ind</span><span class="p">(</span><span class="s2">&quot;isIn&quot;</span><span class="p">,</span> <span class="s2">&quot;Robot1&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">recharge_room</span><span class="p">[</span><span class="s2">&quot;room&quot;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_objectprop_to_ind</span><span class="p">(</span><span class="s2">&quot;isIn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_ind_to_class</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">,</span> <span class="s2">&quot;CORRIDOR&quot;</span><span class="p">)</span>
+
+                <span class="c1"># if the first letter is an R, add the individual to the ROOM class</span>
+                <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;R&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_ind_to_class</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">,</span> <span class="s2">&quot;ROOM&quot;</span><span class="p">)</span>
+
+                <span class="c1"># if the first letter is a C, add the individual to the CORRIDOR class</span>
+                <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">armor_client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_ind_to_class</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">room</span><span class="p">,</span> <span class="s2">&quot;CORRIDOR&quot;</span><span class="p">)</span>
 
                 <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">connections</span><span class="p">)):</span>
                     <span class="c1"># store usefull variables</span>

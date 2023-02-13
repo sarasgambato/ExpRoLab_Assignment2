@@ -1,6 +1,6 @@
 /**
 * \file detect_marker.cpp
-* \brief Node which moves the arm of the robot to detect the ArUco markers in the environment.
+* \brief Node which moves the arm of the robot to detect the ArCo markers in the environment.
 * \author Sara Sgambato
 * \version 1.0
 * \date 04/02/2023
@@ -26,7 +26,7 @@
 * `/id_list` topic in which all the markers' ID are published
 * 
 * Description:
-* The node is used to detect the ArUco markers that are in the environment. The joints of the robot's arm are moved via
+* The node is used to detect the AruCo markers that are in the environment. The joints of the robot's arm are moved via
 * the respective topic detect the 7 markers around itself, first on the floor and then on the walls, and once all markers 
 * have been detected their ID are published as a list.
 **/
@@ -40,7 +40,7 @@
 
 /**
 * \class DetectAruco
-* \brief Class to detect the ArUco markers in the environment.
+* \brief Class to detect the AruCo markers in the environment.
 *
 * This class subscribes to the topic relative to what the robot is seeing and it publishes the joints' positions 
 * in order for the robot arm to move, and once a marker has been detected its ID is stored inside a variable.
@@ -53,8 +53,8 @@ class DetectAruco
     ros::Publisher joint02_pub;         /**< ROS publisher to the 2nd joint of the robot's arm */
     ros::Publisher joint03_pub;         /**< ROS publisher to the 3rd joint of the robot's arm */   
     ros::Subscriber camera_sub;         /**< ROS subscriber to the camera image */
-    aruco::MarkerDetector mDetector;    /**< ArUco marker detector */
-    std::vector<aruco::Marker> markers; /**< vector of ArUco markers */
+    aruco::MarkerDetector mDetector;    /**< AruCo marker detector */
+    std::vector<aruco::Marker> markers; /**< vector of AruCo markers */
     int floor_markers = 0;              /**< number of markers on the floor */
     int ceil_markers = 0;               /**< number of markers on the top of the walls */
     int markerSize = 0.05;              /**< size of a marker */
@@ -67,10 +67,10 @@ class DetectAruco
     float current_pose = 0;             /**< current position of the robot's 1st joint */
 
     /**
-    * \brief Constructor of the ArUco class.
+    * \brief Constructor of the DetectAruco class.
     *
     * In the constructor the publishers and the subscriber are initialized. Also, The constructor takes two parameter relative to
-    * the ArUco markers in the environment, the ones on the floor and the ones on the top of the walls.
+    * the AruCo markers in the environment, the ones on the floor and the ones on the top of the walls.
     */
     DetectAruco()
     {

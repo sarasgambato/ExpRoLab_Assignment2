@@ -6,9 +6,14 @@ Behavior Module
 .. automodule:: scripts.behavior
 	:members:
 
-Helper Module
-----------------
-.. automodule:: scripts.helper
+Interface Helper Module
+------------------------
+.. automodule:: scripts.interface_helper
+	:members:
+	
+FSM Helper Module
+------------------
+.. automodule:: scripts.fsm_helper
 	:members:
 
 Robot States Module
